@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+.word {
+  cursor: pointer;
+  color: darkblue;
+  font-size: 20px;
+  margin: 8px 0;
+}
+.word:hover {
+  color: red;
+}
+</style>
+</head>
+
+<body>
+
+<div class="word" onclick="speak(this.innerText)">
+你好
+</div>
+
+<div class="word" onclick="speak(this.innerText)">
+你好吗？
+</div>
+
+<div class="word" onclick="speak(this.innerText)">
+谢谢
+</div>
+
+<script>
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = 'zh-CN';
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+</script>
+
+</body>
+</html>

@@ -2,38 +2,83 @@
 <html>
 <head>
 <meta charset="UTF-8">
+
 <style>
-.word {
+body {
+  font-family: Arial, sans-serif;
+}
+
+.table {
+  display: table;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.row {
+  display: table-row;
+}
+
+.cell {
+  display: table-cell;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.chinese {
   cursor: pointer;
   color: darkblue;
-  font-size: 20px;
-  margin: 8px 0;
+  font-weight: bold;
 }
-.word:hover {
+
+.chinese:hover {
   color: red;
+}
+
+.speaking {
+  color: green !important;
 }
 </style>
 </head>
 
 <body>
 
-<div class="word" onclick="speak(this.innerText)">
-你好
-</div>
+<div class="table">
 
-<div class="word" onclick="speak(this.innerText)">
-你好吗？
-</div>
+  <div class="row">
+    <div class="cell chinese" onclick="speak(this)">你好</div>
+    <div class="cell">Nǐ hǎo</div>
+    <div class="cell">Hallo</div>
+  </div>
 
-<div class="word" onclick="speak(this.innerText)">
-谢谢
+  <div class="row">
+    <div class="cell chinese" onclick="speak(this)">你好吗？</div>
+    <div class="cell">Nǐ hǎo ma?</div>
+    <div class="cell">Wie geht es dir?</div>
+  </div>
+
+  <div class="row">
+    <div class="cell chinese" onclick="speak(this)">谢谢</div>
+    <div class="cell">Xièxiè</div>
+    <div class="cell">Danke</div>
+  </div>
+
 </div>
 
 <script>
-function speak(text) {
+function speak(element) {
+  const text = element.innerText;
+
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = 'zh-CN';
+
   speechSynthesis.cancel();
+
+  element.classList.add("speaking");
+
+  msg.onend = function() {
+    element.classList.remove("speaking");
+  };
+
   speechSynthesis.speak(msg);
 }
 </script>

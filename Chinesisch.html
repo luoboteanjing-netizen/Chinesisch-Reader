@@ -1,87 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-<meta charset="UTF-8">
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-}
-
-.table {
-  display: table;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.row {
-  display: table-row;
-}
-
-.cell {
-  display: table-cell;
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-.chinese {
-  cursor: pointer;
-  color: darkblue;
-  font-weight: bold;
-}
-
-.chinese:hover {
-  color: red;
-}
-
-.speaking {
-  color: green !important;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KI‑Sprachtrainer: Deutsch ↔ Chinesisch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
-
 <body>
+  <main class="container">
+    <header>
+      <h1>KI‑Sprachtrainer <span class="muted">Deutsch ↔ 中文</span></h1>
+      <p class="subtitle">Gesprächsmodus · anonym · Dark Mode</p>
+    </header>
 
-<div class="table">
+    <section class="card">
+      <div class="row">
+        <div class="col">
+          <label class="lbl">Zielrichtung</label>
+          <div class="radio-row">
+            <label><input type="radio" name="mode" value="de2zh" checked> 🇩🇪 → 🇨🇳 (Deutsch → Chinesisch)</label>
+            <label><input type="radio" name="mode" value="zh2de"> 🇨🇳 → 🇩🇪 (Chinesisch → Deutsch)</label>
+          </div>
+        </div>
+        <div class="col right">
+          <button id="btnNext" class="btn">Neue Aufgabe ▶</button>
+        </div>
+      </div>
 
-  <div class="row">
-    <div class="cell chinese" onclick="speak(this)">你好</div>
-    <div class="cell">Nǐ hǎo</div>
-    <div class="cell">Hallo</div>
-  </div>
+      <div class="prompt-box" id="promptBox">
+        <div class="prompt-label">Aufgabe</div>
+        <div class="prompt" id="promptText">Klicke auf „Neue Aufgabe“.</div>
+      </div>
 
-  <div class="row">
-    <div class="cell chinese" onclick="speak(this)">你好吗？</div>
-    <div class="cell">Nǐ hǎo ma?</div>
-    <div class="cell">Wie geht es dir?</div>
-  </div>
+      <div class="controls">
+        <button id="btnSpeakPrompt" class="btn ghost" title="Aufgabe vorlesen">🔊 Aufgabe anhören</button>
+        <button id="btnMic" class="btn primary" title="Antwort sprechen (Push‑to‑Talk)">🎙️ Aufnahme starten</button>
+        <button id="btnStop" class="btn danger" title="Aufnahme stoppen" disabled>■ Aufnahme stoppen</button>
+      </div>
 
-  <div class="row">
-    <div class="cell chinese" onclick="speak(this)">谢谢</div>
-    <div class="cell">Xièxiè</div>
-    <div class="cell">Danke</div>
-  </div>
+      <div class="result">
+        <div class="result-col">
+          <div class="box">
+            <div class="box-title">Deine Antwort (erkannt)</div>
+            <div id="heardText" class="box-content">—</div>
+          </div>
+          <div class="box">
+            <div class="box-title">Korrekturvorschlag</div>
+            <div id="correctionText" class="box-content">—</div>
+            <div class="box-actions">
+              <button id="btnPlayCorrection" class="btn ghost">🔊 Korrektur anhören</button>
+            </div>
+          </div>
+        </div>
+        <div class="result-col">
+          <div class="box">
+            <div class="box-title">Feedback</div>
+            <div id="feedbackText" class="box-content friendly">—</div>
+          </div>
+          <div class="box small">
+            <div class="box-title">Bewertung</div>
+            <div id="scoreText" class="score">—</div>
+          </div>
+        </div>
+      </div>
 
-</div>
+      <footer class="note">
+        <strong>Hinweis zum Datenschutz:</strong> Diese Demoversion arbeitet nur im Browser (Web Speech API). Keine Logins, kein Tracking, keine Server‑Speicherung. Für beste Ergebnisse Chrome/Edge verwenden.
+      </footer>
+    </section>
+  </main>
 
-<script>
-function speak(element) {
-  const text = element.innerText;
-
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = 'zh-CN';
-
-  speechSynthesis.cancel();
-
-  element.classList.add("speaking");
-
-  msg.onend = function() {
-    element.classList.remove("speaking");
-  };
-
-  speechSynthesis.speak(msg);
-}
-</script>
-
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

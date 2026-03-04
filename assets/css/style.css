@@ -1,19 +1,17 @@
-/* Dark theme */
-:root{
-  --bg:#0b0d10; --card:#12161b; --muted:#8fa1b3; --text:#e6edf3; --accent:#7aa2f7; --danger:#f7768e; --ok:#9ece6a; --warn:#e0af68;
-}
+/* Dark theme base */
+:root{ --bg:#0b0d10; --card:#12161b; --muted:#8fa1b3; --text:#e6edf3; --accent:#7aa2f7; --danger:#f7768e; }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif}
 .container{max-width:1100px;margin:32px auto;padding:0 16px}
 header h1{margin:0 0 4px 0;font-size:28px}
 .muted{color:var(--muted);font-weight:600}
 .subtitle{margin:0 0 16px 0;color:var(--muted)}
-.card{background:var(--card);border:1px solid #1e2530;border-radius:12px;padding:16px 16px 12px}
+.card{background:var(--card);border:1px solid #1e2530;border-radius:12px;padding:16px 16px 12px;margin-bottom:16px}
 .row{display:flex;gap:16px;align-items:center;justify-content:space-between}
 .lbl{display:block;margin-bottom:6px;color:var(--muted)}
-.radio-row{display:flex;gap:18px}
+.radio-row{display:flex;gap:18px;flex-wrap:wrap}
 .col.right{text-align:right}
-.btn{background:#1b2330;color:var(--text);border:1px solid #293241;padding:10px 14px;border-radius:10px;cursor:pointer}
+.btn{background:#1b2330;color:#e6edf3;border:1px solid #293241;padding:10px 14px;border-radius:10px;cursor:pointer}
 .btn:hover{border-color:#3b4a61}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#081018;font-weight:700}
 .btn.danger{background:var(--danger);border-color:var(--danger);color:#100a0a}
@@ -30,6 +28,12 @@ header h1{margin:0 0 4px 0;font-size:28px}
 .box-actions{margin-top:8px}
 .friendly{white-space:pre-wrap}
 .score{font-size:24px;font-weight:800}
-.note{margin-top:10px;color:var(--muted);font-size:12px}
-@media(max-width:900px){.result{grid-template-columns:1fr}}
-
+.section-title{font-weight:800;margin-bottom:8px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pane{border:1px solid #283344;border-radius:10px;padding:12px}
+.select{width:100%;background:#0f141b;border:1px solid #293241;color:#e6edf3;border-radius:8px;padding:10px;min-height:48px}
+.select.single{min-height:40px}
+.small{color:var(--muted);font-size:12px;margin-bottom:4px}
+.mt8{margin-top:8px}.mt12{margin-top:12px}
+.voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.result{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}

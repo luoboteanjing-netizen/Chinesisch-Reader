@@ -1,4 +1,4 @@
-// r17.3.1: full controls wired + voices panel + debug badge
+// r17.3.2: voices panel fixes + results table
 let EXCEL_URL = './data/Long-Chinesisch_Lektionen.xlsx';
 const COL_WORD={de:1,py:2,zh:6};
 const COL_SENT={de:5,py:4,zh:7};
@@ -64,7 +64,7 @@ async function parseExcelBuffer(buf){ try{
   if(currentKey && current && current.entries.length>0){ state.lessons.set(currentKey, current); }
 
   dbg.markerLines=markerCount; dbg.lessons=state.lessons.size; dbg.cards=totalCards; setDbg();
-  populateLessonSelect(); syncUISelectionWithSettings();
+  populateLessonSelect(); syncUISelectionWithSettings(); renderResultsTable();
  }catch(err){ console.error('parseExcelBuffer error:',err); dbg.stopReason='(Parsing-Fehler: '+(err?.message||'')+')'; setDbg(); }
 }
 
@@ -91,7 +91,6 @@ function setCard(entry){ state.current=entry; $('#solBox').classList.add('masked
     $('#solWord').innerHTML=formatZh(entry.word.zh, entry.word.py);
     $('#solSent').innerHTML=formatZh(entry.sent.zh, entry.sent.py);
   }
-  // enable controls
   $('#btnPrev').disabled=false; $('#btnReveal').disabled=false; $('#btnNext').disabled=false; $('#btnPlayQ').disabled=false; $('#btnPlayA').disabled=false; disableRating(); renderModeUI(); }
 
 function nextCard(){ if(!state.pool.length) return alert('Bitte Lektionen wählen und übernehmen.'); if(state.order==='seq'){ if(state.idx==null) state.idx=0; else state.idx=(state.idx+1)%state.pool.length; setCard(state.pool[state.idx]); } else { const e=state.pool[Math.floor(Math.random()*state.pool.length)]; setCard(e); } }
@@ -106,16 +105,18 @@ function doReveal(){ $('#solBox').classList.remove('masked'); state.revealedAt=D
 function enableRating(){ $('#btnRateKnown').disabled=false; $('#btnRateUnsure').disabled=false; $('#btnRateUnknown').disabled=false; }
 function disableRating(){ $('#btnRateKnown').disabled=true; $('#btnRateUnsure').disabled=true; $('#btnRateUnknown').disabled=true; }
 
-function rate(mark){ if(!state.current) return; state.session.done += 1; if(mark==='known') state.session.known += 1; else if(mark==='unsure') state.session.unsure += 1; else state.session.unknown += 1; renderSessionStats();
-  try{ const lessonKey = findLessonKeyOfCurrent(); if(lessonKey){ const rec=ensureBL(lessonKey); if(mark==='known') rec.known += 1; else if(mark==='unknown') rec.unknown += 1; saveProgress(); populateLessonSelect(); } }catch(e){}
-  disableRating(); nextCard(); }
+function rate(mark){ if(!state.current) return; state.session.done += 1; if(mark==='known') state.session.known += 1; else if(mark==='unsure') state.session.unsure += 1; else state.session.unknown += 1; renderSessionStats(); try{ const lessonKey = findLessonKeyOfCurrent(); if(lessonKey){ const rec=ensureBL(lessonKey); if(mark==='known') rec.known += 1; else if(mark==='unknown') rec.unknown += 1; saveProgress(); populateLessonSelect(); renderResultsTable(); } }catch(e){} disableRating(); nextCard(); }
 
 function findLessonKeyOfCurrent(){ for(const [k,obj] of state.lessons.entries()){ const arr=obj?.entries||[]; if(arr.includes(state.current)) return k; } return null; }
 
 function formatZh(hz,py){ const h=(hz||'').trim(); const p=(py||'').trim(); return p? `${h}<br><span class="py">${p}</span>` : (h||'—'); }
 function formatPinyinAndPos(py,pos){ const a=(py||'').trim(); const b=(pos||'').trim(); if(a&&b) return `<span class="py">${a}</span><br><span class="prompt small" style="display:inline-block;margin-top:6px;">${b}</span>`; if(a) return `<span class="py">${a}</span>`; if(b) return `<span class="prompt small" style="display:inline-block;margin-top:6px;">${b}</span>`; return ''; }
 
-// ====== TTS ======
+// ====== RESULTS TABLE ======
+function renderResultsTable(){ const tbl=$('#resultsTable'); if(!tbl) return; const keys=Array.from(state.lessons.keys()).map(k=>parseInt(k,10)).sort((a,b)=>a-b); let html='<thead><tr><th>Lektion</th><th>Richtig</th><th>Falsch</th></tr></thead><tbody>'; for(const k of keys){ const key=String(k); const name=(state.lessons.get(key)?.displayName)||`Lektion ${k}`; const bl=state.progress.byLesson?.[key]||{known:0,unknown:0}; const known=bl.known||0, unknown=bl.unknown||0; html+=`<tr><td>${escapeHtml(name)}</td><td>${known}</td><td>${unknown}</td></tr>`; } html+='</tbody>'; tbl.innerHTML=html; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[m])); }
+
+// ====== TTS / VOICES ======
 function refreshVoices(){ try{ state.voices = window.speechSynthesis?.getVoices?.() || []; }catch(e){ state.voices=[]; } }
 function getVoiceByName(name){ if(!name) return null; return (state.voices||[]).find(v=>v.name===name)||null; }
 function buildUtterance(text, lang){ const u=new SpeechSynthesisUtterance(text||''); u.lang=lang; if(lang.startsWith('de')){ u.rate=state.rateDe; u.pitch=state.pitchDe; const v=getVoiceByName(state.settings.voiceDe); if(v) u.voice=v; } else if(lang.startsWith('zh')){ u.rate=state.rateZh; u.pitch=state.pitchZh; const v=getVoiceByName(state.settings.voiceZh); if(v) u.voice=v; } return u; }
@@ -123,35 +124,26 @@ function speak(text, lang){ try{ const u=buildUtterance(text, lang); window.spee
 function playQ(){ if(!state.current) return; if(state.mode==='de2zh'){ speak(state.current.word.de,'de-DE'); } else { speak(state.current.word.zh,'zh-CN'); } }
 function playA(){ if(!state.current) return; if(state.mode==='de2zh'){ speak(state.current.word.zh,'zh-CN'); } else { speak(state.current.word.de,'de-DE'); } }
 
-// ====== Voices Panel UI ======
-function openVoicesPanelFor(lang){ refreshVoices(); const panel=$('#voicePanel'); const list=$('#voicesList'); const label=$('#panelLang'); if(!panel||!list||!label) return; panel.classList.remove('hidden'); label.textContent = lang.toUpperCase(); list.innerHTML=''; const short=(v)=> (v.lang||'').slice(0,2).toLowerCase();
-  const voices=(state.voices||[]).filter(v=> short(v)=== (lang==='zh'?'zh':'de') );
-  if(voices.length===0){ list.innerHTML='<div class="hint">Keine Systemstimmen gefunden. Bitte Seite interaktiv nutzen (einmal klicken/tippen) und erneut öffnen.</div>'; return; }
-  voices.forEach(v=>{
-    const row=document.createElement('div'); row.className='voice';
-    const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML=`<div class="name">${v.name}</div><div>${v.lang}${v.default?' · default':''}</div>`;
-    const btn=document.createElement('button'); btn.className='btn small'; btn.textContent='Auswählen';
-    btn.addEventListener('click',()=>{
-      if(lang==='zh'){ state.settings.voiceZh=v.name; } else { state.settings.voiceDe=v.name; }
-      saveSettings(); panel.classList.add('hidden');
-    });
-    row.appendChild(meta); row.appendChild(btn); list.appendChild(row);
-  });
+function openVoicesPanelFor(lang){ try{ const panel=$('#voicePanel'); const list=$('#voicesList'); const label=$('#panelLang'); const btnRefresh=$('#btnVoicesRefresh'); if(!panel||!list||!label) return; label.textContent=lang.toUpperCase(); panel.classList.remove('hidden');
+    const rebuild=()=>{ list.innerHTML=''; refreshVoices(); const voices=(state.voices||[]).filter(v=> (v.lang||'').toLowerCase().startsWith(lang==='zh'?'zh':'de') ); if(voices.length===0){ list.innerHTML='<div class="hint">Keine Systemstimmen gefunden. Bitte einmal irgendwo in die Seite klicken/tippen und dann „Aktualisieren“ drücken.</div>'; return; } voices.forEach(v=>{ const row=document.createElement('div'); row.className='voice'; const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML=`<div class="name">${v.name}</div><div>${v.lang}${v.default?' · default':''}</div>`; const btn=document.createElement('button'); btn.className='btn small'; btn.textContent='Auswählen'; btn.addEventListener('click',()=>{ if(lang==='zh'){ state.settings.voiceZh=v.name; } else { state.settings.voiceDe=v.name; } saveSettings(); panel.classList.add('hidden'); }); row.appendChild(meta); row.appendChild(btn); list.appendChild(row); }); };
+    rebuild();
+    btnRefresh?.addEventListener('click', rebuild);
+    // Some browsers fire voiceschanged async
+    if(window.speechSynthesis && 'onvoiceschanged' in window.speechSynthesis){ const handler=()=>{ rebuild(); window.speechSynthesis.onvoiceschanged=null; }; window.speechSynthesis.onvoiceschanged=handler; }
+ }catch(e){}
 }
 function closeVoices(){ const panel=$('#voicePanel'); if(panel) panel.classList.add('hidden'); }
 
+// ====== SESSION/UI ======
 function renderSessionStats(){ const s=state.session; const avg=s.ttrCount? (s.ttrSum/s.ttrCount/1000).toFixed(1) : '—'; const acc=s.done? Math.round(100*s.known/s.done)+'%' : '—'; const el=$('#sessionStats'); if(el) el.textContent=`Karten: ${s.done}/${s.total} · Korrekt: ${acc} · Ø Aufdeck‑Zeit: ${avg}s`; }
 function renderModeUI(){ const left=$('#modeLeft'), right=$('#modeRight'); if(left&&right){ if(state.mode==='zh2de'){ left.textContent='🇨🇳 ZH'; right.textContent='🇩🇪 DE'; } else { left.textContent='🇩🇪 DE'; right.textContent='🇨🇳 ZH'; } } const b=$('#btnOrderToggle'); if(b) b.textContent='Reihenfolge: '+(state.order==='seq'?'Sequenziell':'Zufällig'); updateTrainingBtn(); }
 
 window.addEventListener('DOMContentLoaded', ()=>{
-  // Settings load
-  loadSettings();
+  loadSettings(); loadProgress();
   state.mode=state.settings.mode||'de2zh'; state.order=state.settings.order||'random';
   state.autoplay.gapMs = typeof state.settings.autoplayGap==='number' ? state.settings.autoplayGap : 800;
   renderModeUI(); setDbg();
-  // Excel
   loadExcel();
-  // Wire controls
   const on=(sel,ev,fn)=>{ const el=$(sel); if(el) el.addEventListener(ev,fn); };
   on('#btnStart','click',()=>{ startTraining(); });
   on('#btnNext','click',()=>{ nextCard(); });
@@ -162,14 +154,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
   on('#btnRateUnknown','click',()=>{ rate('unknown'); });
   on('#btnOrderToggle','click',()=>{ state.order=(state.order==='random')?'seq':'random'; state.settings.order=state.order; saveSettings(); renderModeUI(); });
   on('#btnSwapMode','click',()=>{ state.mode=(state.mode==='de2zh')?'zh2de':'de2zh'; state.settings.mode=state.mode; saveSettings(); renderModeUI(); if(state.current) setCard(state.current); });
-  on('#btnUseLessons','click',()=>{ const sel=$('#lessonSelect'); const picked=[]; for(const o of sel.selectedOptions){ picked.push(o.value); } state.settings.lessons=picked; saveSettings(); gatherPoolFromSettings(); });
-  on('#btnClearLessons','click',()=>{ state.selectedLessons.clear(); state.settings.lessons=[]; saveSettings(); state.pool=[]; state.idx=null; resetSessionStats(); const sel=$('#lessonSelect'); if(sel){ for(const o of sel.options){ o.selected=false; } } if(state.trainingOn) stopTraining(); });
+  on('#btnUseLessons','click',()=>{ const sel=$('#lessonSelect'); const picked=[]; for(const o of sel.selectedOptions){ picked.push(o.value); } state.settings.lessons=picked; saveSettings(); gatherPoolFromSettings(); renderResultsTable(); });
+  on('#btnClearLessons','click',()=>{ state.selectedLessons.clear(); state.settings.lessons=[]; saveSettings(); state.pool=[]; state.idx=null; resetSessionStats(); const sel=$('#lessonSelect'); if(sel){ for(const o of sel.options){ o.selected=false; } } if(state.trainingOn) stopTraining(); renderResultsTable(); });
   on('#btnPlayQ','click',()=>{ playQ(); });
   on('#btnPlayA','click',()=>{ playA(); });
   on('#btnVoiceDe','click',()=>{ openVoicesPanelFor('de'); });
   on('#btnVoiceZh','click',()=>{ openVoicesPanelFor('zh'); });
   on('#btnCloseVoices','click',()=>{ closeVoices(); });
-
-  // Voices might need a priming event on some browsers
+  // prime voices after first user gesture (for iframes)
   document.body.addEventListener('click',()=>{ refreshVoices(); }, { once:true });
 });

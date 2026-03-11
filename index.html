@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chinesisch Flashcards – r17.3 (Debug)</title>
+  <title>Chinesisch Flashcards – r17.3.2 (Debug)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
   <main class="container">
     <header>
       <h1>Flashcards <span class="muted">Deutsch ↔ 中文</span></h1>
-      <p class="subtitle">r17.3 – Einzelblatt‑Parser · Marker "*" → Lektionsname (alles nach erstem Stern) · Start ab Zeile 2</p>
+      <p class="subtitle">r17.3.2 – Einzelblatt‑Parser · Marker "*" → Lektionsname (alles nach erstem Stern) · Start ab Zeile 2</p>
       <div id="dbgStatus" class="dbg-status">Debug: initialisiere…</div>
       <div class="top-actions">
         <span class="muted small-label">Fortschritt:</span>
@@ -54,24 +54,6 @@
           <div class="two-col mt12">
             <button id="btnVoiceDe" class="btn large fit voice-btn">DE Stimme</button>
             <button id="btnVoiceZh" class="btn large fit voice-btn">ZH Stimme</button>
-          </div>
-          <div class="two-col mt8 voice-grids">
-            <div class="voice-config">
-              <label class="lbl">DE Tempo <span id="rateDeVal" class="hint">(0.95)</span></label>
-              <input id="rateDeRange" class="voice-range" type="range" min="0.6" max="1.6" step="0.05" value="0.95" />
-              <label class="lbl">DE Tonhöhe <span id="pitchDeVal" class="hint">(1.00)</span></label>
-              <input id="pitchDeRange" class="voice-range" type="range" min="0.7" max="1.5" step="0.05" value="1.00" />
-            </div>
-            <div class="voice-config">
-              <label class="lbl">ZH Tempo <span id="rateZhVal" class="hint">(0.95)</span></label>
-              <input id="rateZhRange" class="voice-range" type="range" min="0.6" max="1.6" step="0.05" value="0.95" />
-              <label class="lbl">ZH Tonhöhe <span id="pitchZhVal" class="hint">(1.00)</span></label>
-              <input id="pitchZhRange" class="voice-range" type="range" min="0.7" max="1.5" step="0.05" value="1.00" />
-            </div>
-          </div>
-
-          <div class="stack mt12">
-            <button id="btnStart" class="btn primary">Training starten ▶</button>
           </div>
         </div>
       </div>
@@ -125,7 +107,28 @@
       <div id="sessionStats" class="stats-bar">—</div>
 
     </section>
+
+    <section class="card" id="resultsSection">
+      <div class="section-title">Ergebnisse</div>
+      <div class="lbl">Übersicht pro Lektion</div>
+      <table class="plain" id="resultsTable"></table>
+    </section>
   </main>
+
+  <!-- Voices Panel -->
+  <div id="voicePanel" class="panel hidden">
+    <div class="panel-head">
+      <div class="title">Stimmenauswahl <span id="panelLang"></span></div>
+      <button id="btnCloseVoices" class="btn ghost">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="controls mb8">
+        <button id="btnVoicesRefresh" class="btn small">Aktualisieren</button>
+      </div>
+      <div id="voicesList" class="voices"></div>
+      <div class="hint">Hinweis: In eingebetteten Seiten (Google Sites) stellen Browser Stimmen oft erst nach einer Benutzeraktion (Klick/Tap) bereit.</div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="assets/js/app.js"></script>

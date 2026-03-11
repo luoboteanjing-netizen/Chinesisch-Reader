@@ -1,134 +1,52 @@
-
 /* r15: Fix "Leeren"; show per-lesson Richtig/Falsch; 'Unsicher' nicht zählen */
 let EXCEL_URL = './data/Long-Chinesisch_Lektionen.xlsx';
-// Alte Filter für Blätter sind nicht mehr nötig:
-// const SHEET_NAME_PATTERN = /^L\s*\d{1,2}$/i;
-// const MIN_LESSON=0, MAX_LESSON=16;
-
-const MIN_LESSON=0, MAX_LESSON=16;
-const DATA_START_ROW=3;
-const COL_WORD={de:1,py:2,zh:6};
-const COL_SENT={de:5,py:4,zh:7};
-const COL_POS=3;
-
-const LS_KEYS={
-  settings:'fc_settings_v1',
-  progress:'fc_progress_v1'
-};
+const SHEET_NAME_PATTERN = /^L\s*\d{1,2}$/i; const MIN_LESSON=0, MAX_LESSON=16; const DATA_START_ROW=3;
+const COL_WORD={de:1,py:2,zh:6}; const COL_SENT={de:5,py:4,zh:7}; const COL_POS=3;
+const LS_KEYS={ settings:'fc_settings_v1', progress:'fc_progress_v1' };
 
 const state={
-  mode:'de2zh',
-  order:'random',
-  rateDe:0.95,
-  pitchDe:1.0,
-  rateZh:0.95,
-  pitchZh:1.0,
-  lessons:new Map(),
-  selectedLessons:new Set(),
-  pool:[],
-  idx:null,
-  current:null,
-  voices:[],
-  browserVoice:{ zh:null, de:null },
-  voicePanelTarget:'de',
+  mode:'de2zh', order:'random',
+  rateDe:0.95, pitchDe:1.0, rateZh:0.95, pitchZh:1.0,
+  lessons:new Map(), selectedLessons:new Set(), pool:[], idx:null, current:null,
+  voices:[], browserVoice:{ zh:null, de:null }, voicePanelTarget:'de',
   autoplay:{ on:false, timers:[], gapMs:800 },
-  settings:{
-    mode:'de2zh',
-    order:'random',
-    rateDe:0.95,
-    pitchDe:1.0,
-    rateZh:0.95,
-    pitchZh:1.0,
-    lessons:[],
-    browserVoiceZh:null,
-    browserVoiceDe:null,
-    autoplayGap:800
-  },
+  settings:{ mode:'de2zh', order:'random', rateDe:0.95, pitchDe:1.0, rateZh:0.95, pitchZh:1.0, lessons:[], browserVoiceZh:null, browserVoiceDe:null, autoplayGap:800 },
   session:{ total:0, done:0, known:0, unsure:0, unknown:0, ttrSum:0, ttrCount:0 },
-  startedAt:null,
-  revealedAt:null,
-  progress:{
-    version:'v1',
-    cards:{},
-    byLesson:{}
-  },
+  startedAt:null, revealedAt:null,
+  // progress.byLesson: { [lessonId]: { known:number, unknown:number } }
+  progress:{ version:'v1', cards:{}, byLesson:{} },
   wakeLock:null,
   trainingOn:false
 };
 
 const $=s=>document.querySelector(s);
 
-function saveSettings(){
-  try{ localStorage.setItem(LS_KEYS.settings, JSON.stringify(state.settings)); }catch(e){}
-}
-function loadSettings(){
-  try{
-    const s=JSON.parse(localStorage.getItem(LS_KEYS.settings)||'null');
-    if(s){ state.settings=Object.assign(state.settings,s); }
-  }catch(e){}
-}
+function saveSettings(){ try{ localStorage.setItem(LS_KEYS.settings, JSON.stringify(state.settings)); }catch(e){} }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem(LS_KEYS.settings)||'null'); if(s){ state.settings=Object.assign(state.settings,s); } }catch(e){} }
+function saveProgress(){ try{ localStorage.setItem(LS_KEYS.progress, JSON.stringify(state.progress)); }catch(e){} }
+function loadProgress(){ try{ const p=JSON.parse(localStorage.getItem(LS_KEYS.progress)||'null'); if(p && p.version==='v1'){ state.progress=p; } }catch(e){} }
 
-function saveProgress(){
-  try{ localStorage.setItem(LS_KEYS.progress, JSON.stringify(state.progress)); }catch(e){}
-}
+function isZhVoice(v){ const L=(v.lang||'').toLowerCase(); return L.startsWith('zh')||L.includes('cmn')||L.includes('hans')||L.includes('zh-cn'); }
+function isDeVoice(v){ const L=(v.lang||'').toLowerCase(); return L.startsWith('de'); }
 
-function loadProgress(){
-  try{
-    const p=JSON.parse(localStorage.getItem(LS_KEYS.progress)||'null');
-    if(p && p.version==='v1') state.progress=p;
-  }catch(e){}
+function updateVoiceList(){ const box=$('#dbgVoices'); if(!box) return; box.innerHTML=''; const list=(state.voices||[]).filter(v=> state.voicePanelTarget==='zh'? isZhVoice(v) : isDeVoice(v)); if(list.length===0){ box.innerHTML='<div class="meta">Keine passenden Stimmen gefunden.</div>'; return; }
+  list.forEach(v=>{ const row=document.createElement('div'); row.className='voice'; const name=document.createElement('div'); name.className='name'; name.textContent=v.name||'(name)'; const meta=document.createElement('div'); meta.className='meta'; meta.textContent=`${v.lang||''} ${v.default?'· default':''}`; const actions=document.createElement('div'); actions.style.marginLeft='auto'; actions.style.display='flex'; actions.style.gap='6px'; actions.style.flexWrap='wrap';
+    const pick=document.createElement('button'); pick.className='btn'; pick.textContent='Diese Stimme wählen'; pick.onclick=()=>{ if(state.voicePanelTarget==='zh'){ state.browserVoice.zh=v; state.settings.browserVoiceZh=v.name||v.voiceURI; } else { state.browserVoice.de=v; state.settings.browserVoiceDe=v.name||v.voiceURI; } saveSettings(); updateVoiceList(); };
+    const test=document.createElement('button'); test.className='btn ghost'; test.textContent='Probehören'; test.onclick=()=>{ const u=new SpeechSynthesisUtterance(state.voicePanelTarget==='zh'? '这是一个测试。' : 'Dies ist ein Test.'); u.lang=(state.voicePanelTarget==='zh')?'zh-CN':'de-DE'; u.voice=v; try{speechSynthesis.cancel();}catch(e){} speechSynthesis.speak(u); };
+    const act = (state.voicePanelTarget==='zh'? state.browserVoice.zh : state.browserVoice.de);
+    if(act && (act.name===v.name || act.voiceURI===v.voiceURI)) name.textContent+='  •  [Aktiv]';
+    actions.appendChild(pick); actions.appendChild(test);
+    row.appendChild(name); row.appendChild(meta); row.appendChild(actions); box.appendChild(row);
+  });
 }
 
-function isZhVoice(v){
-  const L=(v.lang||'').toLowerCase();
-  return L.startsWith('zh')||L.includes('cmn')||L.includes('hans')||L.includes('zh-cn');
-}
-function isDeVoice(v){
-  const L=(v.lang||'').toLowerCase();
-  return L.startsWith('de');
-}
+function refreshVoices(){ state.voices = window.speechSynthesis?.getVoices?.() || []; if(state.settings.browserVoiceZh){ const vz=state.voices.find(x=>x.name===state.settings.browserVoiceZh||x.voiceURI===state.settings.browserVoiceZh); if(vz) state.browserVoice.zh=vz; } if(state.settings.browserVoiceDe){ const vd=state.voices.find(x=>x.name===state.settings.browserVoiceDe||x.voiceURI===state.settings.browserVoiceDe); if(vd) state.browserVoice.de=vd; } updateVoiceList(); }
 
-/* ----------------------------------------------
-   ✨ NEU: parseExcelBuffer lädt alle Sheets
-   ---------------------------------------------- */
-async function parseExcelBuffer(buf){
-  const wb = XLSX.read(buf,{type:'array'});
-  state.lessons.clear();
+let _voicesRetryT; function openVoicesPanelFor(target){ state.voicePanelTarget=target; refreshVoices(); if(!state.voices || state.voices.length===0){ clearTimeout(_voicesRetryT); let tries=0; const tick=()=>{ tries++; refreshVoices(); if(state.voices.length>0 || tries>=8) return; _voicesRetryT=setTimeout(tick,300); }; _voicesRetryT=setTimeout(tick,300); } $('#voicePanel').classList.remove('hidden'); }
+function closeVoices(){ $('#voicePanel').classList.add('hidden'); }
 
-  // Alle Sheets einlesen, egal wie sie heißen
-  for(let i = 0; i < wb.SheetNames.length; i++){
-    const name = wb.SheetNames[i];
-    const sh = wb.Sheets[name];
-    const rows = XLSX.utils.sheet_to_json(sh,{header:1, blankrows:false});
-    const r0 = DATA_START_ROW - 1;
-    const key = String(i);  // Lektion-ID = laufende Shelf-ID
-
-    if(!state.lessons.has(key)) state.lessons.set(key,[]);
-
-    for(let r = r0; r < rows.length; r++){
-      const row = rows[r];
-      if(!row) continue;
-
-      const entry = {
-        word:{
-          de: row[COL_WORD.de] ?? '',
-          py: row[COL_WORD.py] ?? '',
-          zh: row[COL_WORD.zh] ?? ''
-        },
-        sent:{
-          de: row[COL_SENT.de] ?? '',
-          py: row[COL_SENT.py] ?? '',
-          zh: row[COL_SENT.zh] ?? ''
-        },
-        pos: row[COL_POS] ?? ''
-      };
-
-      state.lessons.get(key).push(entry);
-    }
-  }
-}
-
-/* -------------------------------------------------
+async function parseExcelBuffer(buf){ const wb=XLSX.read(buf,{type:'array'}); state.lessons.clear(); for(const name of wb.SheetNames){ if(!SHEET_NAME_PATTERN.test(name)) continue; const m=name.match(/\d+/); if(!m) continue; const n=parseInt(m[0],10); if(!(n>=MIN_LESSON&&n<=MAX_LESSON)) continue; const sh=wb.Sheets[name]; const rows=XLSX.utils.sheet_to_json(sh,{header:1,blankrows:false}); const r0=DATA_START_ROW-1; const key=String(n); if(!state.lessons.has(key)) state.lessons.set(key,[]); for(let r=r0;r<rows.length;r++){ const row=rows[r]||[]; const w={de:String(row[COL_WORD.de-1]||'').trim(), py:String(row[COL_WORD.py-1]||'').trim(), zh:String(row[COL_WORD.zh-1]||'').trim()}; const s={de:String(row[COL_SENT.de-1]||'').trim(), py:String(row[COL_SENT.py-1]||'').trim(), zh:String(row[COL_SENT.zh-1]||'').trim()}; const pos=String(row[COL_POS-1]||'').trim(); if(!(w.de||w.zh||s.de||s.zh)) continue; state.lessons.get(key).push({word:w,sent:s,pos}); } }
+  populateLessonSelect(); }
 
 async function loadExcel(){ try{ const res=await fetch(EXCEL_URL,{cache:'no-store'}); const buf=await res.arrayBuffer(); await parseExcelBuffer(buf); }catch(e){ console.error('Excel konnte nicht geladen werden:',e); alert('Konnte Datei nicht laden.'); } }
 

@@ -1,65 +1,579 @@
-/* r15 styles (same as r14) */
-:root{ --bg:#0b0d10; --card:#12161b; --muted:#8fa1b3; --text:#e6edf3; --accent:#7aa2f7; --border:#283344; --good:#7bd88f; --bad:#f7768e; --unsure:#ffbd6b; }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif}
-.container{max-width:1100px;margin:24px auto;padding:0 12px}
-header h1{margin:0 0 2px 0;font-size:26px;line-height:1.1}
-.subtitle{margin:0 0 8px 0;color:var(--muted);font-size:14px}
-.top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
-.small-label{font-size:12px;margin-right:2px}
-.btn{background:#1b2330;color:var(--text);border:1px solid #293241;padding:8px 12px;border-radius:10px;cursor:pointer}
-.btn.small{padding:6px 10px;font-size:12px}
-.btn.large{padding:10px 16px;font-size:14px;font-weight:600}
-.btn.primary{background:#7aa2f7;border-color:#7aa2f7;color:#081018;font-weight:700}
-.btn.ghost{background:transparent}
-.card{background:var(--card);border:1px solid #1e2530;border-radius:12px;padding:14px 14px 10px;margin-bottom:14px}
-.lbl{display:block;margin-bottom:6px;color:var(--muted)}
-.hint{color:var(--muted);font-size:12px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.pane{border:1px solid var(--border);border-radius:10px;padding:12px}
-.select, .input{width:100%;background:#0f141b;border:1px solid #293241;color:var(--text);border-radius:8px;padding:10px;min-height:42px}
-.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-.stack{display:flex;flex-direction:column;gap:8px}
-.prompt-box{border:1px dashed #303b49;border-radius:12px;padding:12px}
-.prompt{font-size:20px}
-.prompt.big{font-size:20px;font-weight:800}
-.prompt.sub{color:#c9d3df;margin-bottom:6px}
-.prompt.small{font-size:16px}
-.solution{margin-top:12px}
-.sol{position:relative;border:1px solid var(--border);border-radius:12px;padding:12px}
-.sol .sol-part{margin-bottom:10px}
-.sol .sol-text{font-size:20px;white-space:pre-wrap}
-.sol.masked .sol-text{filter:blur(10px); opacity:0.05; user-select:none}
-.card-controls{display:flex;gap:12px;justify-content:center;margin-top:10px}
-.card-controls.second{margin-top:6px}
-.stats-bar{margin-top:8px;color:#a7b5c5;font-size:13px;text-align:center}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
 
-.debug{position:fixed;inset:5% 5% auto 5%;background:#0f141b;border:1px solid #2b3646;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:1000;display:flex;flex-direction:column}
-.debug.hidden{display:none}
-.debug-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2b3646;padding:8px 10px}
-.debug-head .title{font-weight:800}
-.debug-body{padding:10px;overflow:auto;max-height:70vh}
-.debug-section{margin-bottom:12px}
-.debug-section .h{font-weight:700;margin-bottom:6px;color:#cbd6e3}
-#dbgVoices .voice{display:flex;gap:10px;align-items:center;border:1px solid #2b3646;border-radius:8px;padding:6px;margin-bottom:6px}
-#dbgVoices .voice .meta{font-size:12px;color:#b6c2d0}
-#dbgVoices .voice .name{font-weight:700}
+header {
+    background-color: #000;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 2px solid #007BFF;
+}
 
-.mode-inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.actions-inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.mode-item{background:#0f141b;border:1px solid #293241;border-radius:8px;padding:6px 10px;font-weight:700}
-.btn.swap{font-weight:800;padding:6px 10px}
-.gap-row input[type=range]{width:100%}
+h1 {
+    margin: 0;
+    color: #fff;
+}
 
-.two-col{display:flex; flex-wrap:wrap; gap:10px}
-.two-col > *{flex:1 1 calc(50% - 10px); max-width:calc(50% - 10px)}
-.voice-btn{width:100%}
-.voice-config{display:flex;flex-direction:column;gap:6px}
-.voice-range{width:100%}
+.tabs {
+    display: flex;
+    background-color: #111;
+    border-bottom: 1px solid #333;
+}
 
-.ratebar{display:flex;gap:8px;justify-content:center;align-items:stretch;flex-wrap:nowrap;margin:10px 0 6px}
-.ratebar .btn{flex:0 0 calc((100% - 16px)/3); max-width:calc((100% - 16px)/3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:16px 12px}
-@media(max-width:480px){ .ratebar .btn{padding:12px 10px; font-size:12px} }
+.tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
 
-@media(max-width:460px){ header h1{font-size:20px} .subtitle{font-size:12px} }
-@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.tab-btn.active, .tab-btn:hover {
+    background-color: #007BFF;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+}
+
+.lektionen-container {
+    flex: 1;
+    max-width: 30%;
+}
+
+#lektionen-list {
+    height: 400px;
+    overflow-y: scroll;
+    background-color: #111;
+    padding: 10px;
+    border: 1px solid #333;
+    margin-bottom: 10px;
+}
+
+.lektionen-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.lektionen-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.sprach-modus {
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.mode-btn.active {
+    background-color: #007BFF;
+}
+
+.slider-group {
+    margin-bottom: 20px;
+}
+
+.slider-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.slider-group input[type="range"] {
+    width: 100%;
+}
+
+.btn {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn.secondary {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.karte-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #111;
+    flex: 1;
+}
+
+.karte-container:not(.hidden) {
+    display: flex;
+}
+
+.karte-status {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.timer-bar {
+    height: 5px;
+    background-color: #333;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.karte-wrapper {
+    perspective: 1000px;
+    width: 80%;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+.karte {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+}
+
+.karte.flipped {
+    transform: rotateY(180deg);
+}
+
+.karte-front, .karte-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.karte-back {
+    transform: rotateY(180deg);
+}
+
+h2 { margin: 0 0 10px 0; font-size: 2em; }
+p { margin: 0; font-size: 1.2em; }
+
+.karte-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.modal:not(.hidden) {
+    display: block;
+}
+
+.modal button {
+    margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-container { flex-direction: column; }
+    .lektionen-container { max-width: 100%; }
+    .tabs { flex-wrap: wrap; }
+    .karte-wrapper { width: 100%; height: 200px; }
+}
+
+3. app.js (Logik – kopiere in eine .js-Datei)
+
+// Globale Variablen
+let lektionen = []; // Array von {name: '', flashcards: []}
+let selectedLessons = []; // Ausgewählte Lektionen-IDs
+let currentSession = []; // Aktuelle Karten-Array (randomisiert)
+let currentCardIndex = 0;
+let mode = 'DE'; // 'DE' oder 'ZH'
+let pauseTime = 2; // Sekunden
+let maxKarten = 50;
+let trainingsZeit = 10; // Minuten
+let timerInterval;
+let sessionTimer;
+let isFlipped = false;
+let errorModal = document.getElementById('error-modal');
+let errorMessage = document.getElementById('error-message');
+
+// Initialisierung
+document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    setupEventListeners();
+    loadExcel();
+    switchTab('lektionen'); // Starte mit Lektionen-Tab
+});
+
+// Event Listeners
+function setupEventListeners() {
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            switchTab(e.target.dataset.tab);
+        });
+    });
+
+    // Sliders
+    document.getElementById('pause-slider').addEventListener('input', (e) => {
+        pauseTime = e.target.value;
+        document.getElementById('pause-value').textContent = pauseTime;
+        saveSettings();
+    });
+    document.getElementById('karten-slider').addEventListener('input', (e) => {
+        maxKarten = parseInt(e.target.value);
+        document.getElementById('karten-value').textContent = maxKarten === 50 ? 'Alle' : maxKarten;
+        saveSettings();
+    });
+    document.getElementById('zeit-slider').addEventListener('input', (e) => {
+        trainingsZeit = parseInt(e.target.value);
+        document.getElementById('zeit-value').textContent = trainingsZeit;
+        saveSettings();
+    });
+
+    // Modus-Buttons
+    document.getElementById('de-btn').addEventListener('click', () => switchMode('DE'));
+    document.getElementById('zh-btn').addEventListener('click', () => switchMode('ZH'));
+
+    // Session-Start
+    document.getElementById('start-session').addEventListener('click', startSession);
+
+    // Karte-Navigation
+    document.getElementById('next-btn').addEventListener('click', nextCard);
+    document.getElementById('skip-btn').addEventListener('click', skipCard);
+    document.getElementById('pause-btn').addEventListener('click', pauseSession);
+
+    // Error-Modal
+    document.getElementById('close-error').addEventListener('click', () => {
+        errorModal.classList.add('hidden');
+    });
+
+    // Karte-Flip (Auto und manuell)
+    const karte = document.getElementById('karte');
+    karte.addEventListener('click', flipCard);
+}
+
+// Excel laden und parsen
+function loadExcel() {
+    const url = './lektionen.xlsx';
+    fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(data => {
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets['Sheet1'];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            parseLektionen(rows);
+            renderLektionenList();
+        })
+        .catch(err => {
+            showError('Excel-Datei konnte nicht geladen werden. Stelle sicher, dass "lektionen.xlsx" im Repo liegt.');
+            console.error(err);
+        });
+}
+
+function parseLektionen(rows) {
+    lektionen = [];
+    let currentLektion = null;
+
+    rows.forEach((row, index) => {
+        if (!row || row.length === 0) return;
+
+        const markerCell = row[0] ? row[0].toString().trim() : '';
+        if (markerCell.startsWith('*')) {
+            // Neue Lektion
+            if (currentLektion) lektionen.push(currentLektion);
+            const name = markerCell.substring(1).trim();
+            currentLektion = { name, flashcards: [] };
+        } else if (currentLektion && row.length >= 7) {
+            // Karte hinzufügen (Spalten 0-6: A-G)
+            currentLektion.flashcards.push({
+                deutschWort: row[0] || '',
+                pinyinWort: row[1] || '',
+                wortart: row[2] || '',
+                satzPinyin: row[3] || '',
+                satzDeutsch: row[4] || '',
+                hansiWort: row[5] || '',
+                hansiSatz: row[6] || ''
+            });
+        }
+    });
+    if (currentLektion) lektionen.push(currentLektion);
+
+    if (lektionen.length === 0) {
+        lektionen = [{ name: 'Standard-Lektion', flashcards: [] }];
+    }
+}
+
+// Lektionen-Liste rendern
+function renderLektionenList() {
+    const list = document.getElementById('lektionen-list');
+    list.innerHTML = '';
+    lektionen.forEach((lekt, index) => {
+        const div = document.createElement('div');
+        div.className = 'lektionen-item';
+        div.innerHTML = `
+            <input type="checkbox" id="lekt-${index}" data-index="${index}">
+            <label for="lekt-${index}">${lekt.name} (${lekt.flashcards.length} Karten)</label>
+        `;
+        list.appendChild(div);
+        div.querySelector('input').addEventListener('change', updateSelection);
+    });
+    updateKartenAnzahl();
+}
+
+function updateSelection(e) {
+    const index = parseInt(e.target.dataset.index);
+    if (e.target.checked) {
+        selectedLessons.push(index);
+    } else {
+        selectedLessons = selectedLessons.filter(i => i !== index);
+    }
+    updateKartenAnzahl();
+}
+
+function updateKartenAnzahl() {
+    let total = 0;
+    selectedLessons.forEach(idx => {
+        total += lektionen[idx].flashcards.length;
+    });
+    document.getElementById('karten-anzahl').textContent = `Ausgewählte Karten: ${total}`;
+}
+
+// Session starten
+function startSession() {
+    if (selectedLessons.length === 0) {
+        showError('Bitte wähle mindestens eine Lektion aus.');
+        return;
+    }
+
+    // Sammle Karten
+    currentSession = [];
+    selectedLessons.forEach(idx => {
+        currentSession = currentSession.concat(lektionen[idx].flashcards);
+    });
+
+    // Randomisieren und begrenzen
+    currentSession = shuffle(currentSession).slice(0, maxKarten);
+    if (currentSession.length === 0) {
+        showError('Keine Karten verfügbar.');
+        return;
+    }
+
+    currentCardIndex = 0;
+    switchTab('einfuehrung'); // Oder verstecke Tabs
+    document.querySelector('.main-container').classList.add('hidden');
+    document.getElementById('karte-container').classList.remove('hidden');
+    startTimer();
+    showCard();
+}
+
+// Karte anzeigen
+function showCard() {
+    if (currentCardIndex >= currentSession.length) {
+        endSession();
+        return;
+    }
+
+    const card = currentSession[currentCardIndex];
+    isFlipped = false;
+    document.getElementById('karte').classList.remove('flipped');
+
+    if (mode === 'DE') {
+        document.getElementById('front-title').textContent = card.deutschWort || card.satzDeutsch;
+        document.getElementById('front-subtitle').textContent = card.wortart;
+        document.getElementById('back-title').textContent = card.pinyinWort || card.satzPinyin;
+        document.getElementById('back-subtitle').textContent = card.hansiWort || card.hansiSatz;
+    } else {
+        document.getElementById('front-title').textContent = card.hansiWort || card.hansiSatz;
+        document.getElementById('front-subtitle').textContent = card.wortart;
+        document.getElementById('back-title').textContent = card.pinyinWort || card.satzPinyin;
+        document.getElementById('back-subtitle').textContent = card.deutschWort || card.satzDeutsch;
+    }
+
+    document.getElementById('karten-status').textContent = `Karte ${currentCardIndex + 1}/${currentSession.length}`;
+    flipAfterPause();
+}
+
+// Flip nach Pause
+function flipAfterPause() {
+    setTimeout(() => {
+        if (!isPaused && currentCardIndex < currentSession.length) {
+            flipCard();
+        }
+    }, pauseTime * 1000);
+}
+
+function flipCard() {
+    const karte = document.getElementById('karte');
+    karte.classList.toggle('flipped');
+    isFlipped = !isFlipped;
+    if (isFlipped) {
+        nextAfterFlip();
+    }
+}
+
+function nextAfterFlip() {
+    setTimeout(() => {
+        if (!isPaused) nextCard();
+    }, 1000); // Kurze Pause nach Flip
+}
+
+function nextCard() {
+    currentCardIndex++;
+    showCard();
+}
+
+function skipCard() {
+    currentCardIndex++;
+    showCard();
+}
+
+let isPaused = false;
+function pauseSession() {
+    isPaused = !isPaused;
+    if (isPaused) {
+        clearInterval(timerInterval);
+        document.getElementById('pause-btn').textContent = 'Fortsetzen';
+    } else {
+        startTimer();
+        document.getElementById('pause-btn').textContent = 'X';
+    }
+}
+
+// Timer für Trainingszeit
+function startTimer() {
+    let timeLeft = trainingsZeit * 60;
+    const bar = document.getElementById('timer-bar');
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        const progress = (1 - timeLeft / (trainingsZeit * 60)) * 100;
+        bar.style.width = progress + '%';
+        bar.style.backgroundColor = progress > 50 ? '#ffc107' : '#dc3545';
+        if (timeLeft <= 0) {
+            endSession();
+        }
+    }, 1000);
+}
+
+function endSession() {
+    clearInterval(timerInterval);
+    showError('Session beendet! Du hast ' + currentSession.length + ' Karten trainiert.');
+    resetToLektionen();
+}
+
+function resetToLektionen() {
+    document.querySelector('.main-container').classList.remove('hidden');
+    document.getElementById('karte-container').classList.add('hidden');
+    currentSession = [];
+    currentCardIndex = 0;
+    switchTab('lektionen');
+}
+
+// Hilfsfunktionen
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+
+function switchMode(newMode) {
+    mode = newMode;
+    document.getElementById('de-btn').classList.toggle('active', mode === 'DE');
+    document.getElementById('zh-btn').classList.toggle('active', mode === 'ZH');
+    if (currentSession.length > 0) {
+        showCard(); // Neu anzeigen
+    }
+    saveSettings();
+}
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function saveSettings() {
+    localStorage.setItem('flashcards-settings', JSON.stringify({
+        mode, pauseTime, maxKarten, trainingsZeit
+    }));
+}
+
+function loadSettings() {
+    const saved = localStorage.getItem('flashcards-settings');
+    if (saved) {
+        const settings = JSON.parse(saved);
+        mode = settings.mode || 'DE';
+        pauseTime = settings.pauseTime || 2;
+        maxKarten = settings.maxKarten || 50;
+        trainingsZeit = settings.trainingsZeit || 10;
+        document.getElementById('pause-slider').value = pauseTime;
+        document.getElementById('karten-slider').value = maxKarten;
+        document.getElementById('zeit-slider').value = trainingsZeit;
+        document.getElementById('pause-value').textContent = pauseTime;
+        document.getElementById('karten-value').textContent = maxKarten === 50 ? 'Alle' : maxKarten;
+        document.getElementById('zeit-value').textContent = trainingsZeit;
+        switchMode(mode);
+    }
+}
+
+function showError(msg) {
+    errorMessage.textContent = msg;
+    errorModal.classList.remove('hidden');
+}

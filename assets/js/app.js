@@ -1,8 +1,11 @@
-/* r17: Single-sheet parser (sheet #0), lessons by markers in first cell containing '*'
-   - Start reading at row 2 (1-based)
-   - New lesson when first cell contains '*': row is NOT added, first 2 chars of that cell are removed, result becomes lesson name
-   - Empty rows skipped; if >10 empty rows in a row, stop
-   - Column mapping identical to old version: 
+/* r17.2: Single-sheet parser (sheet #0) with robust marker parsing
+   Rules:
+   - Only first sheet is read
+   - Start at row 2 (1-based)
+   - New lesson when first cell starts with '*' (asterisk); anything after first '*' becomes the name (trim all kinds of spaces)
+   - The marker row is NOT added as a card
+   - Skip empty rows; after >10 consecutive empty rows, stop
+   - Column mapping identical to old version:
        COL_WORD={de:1, py:2, zh:6}; COL_SENT={de:5, py:4, zh:7}; COL_POS=3 (1-based)
 */
 let EXCEL_URL = './data/Long-Chinesisch_Lektionen.xlsx';
@@ -16,7 +19,6 @@ const LS_KEYS={ settings:'fc_settings_v1', progress:'fc_progress_v1' };
 
 const state={ mode:'de2zh', order:'random',
   rateDe:0.95, pitchDe:1.0, rateZh:0.95, pitchZh:1.0,
-  // lessons: Map<lessonKey, { displayName:string, entries:Array<entry> }>
   lessons:new Map(),
   selectedLessons:new Set(), pool:[], idx:null, current:null,
   voices:[], browserVoice:{ zh:null, de:null }, voicePanelTarget:'de',
@@ -37,11 +39,22 @@ function saveProgress(){ try{ localStorage.setItem(LS_KEYS.progress, JSON.string
 function loadProgress(){ try{ const p=JSON.parse(localStorage.getItem(LS_KEYS.progress)||'null'); if(p && p.version==='v1'){ state.progress=p; } }catch(e){} }
 function ensureBL(lessonKey){ const bl=state.progress.byLesson; bl[lessonKey]=bl[lessonKey]||{ known:0, unknown:0 }; return bl[lessonKey]; }
 
-function isCellEmpty(v){ if(v==null) return true; const s=String(v).trim(); return s.length===0; }
+function isCellEmpty(v){ if(v==null) return true; const s=String(v).replace(/ /g,' ').trim(); return s.length===0; }
 function isRowEmpty(row){ if(!row || row.length===0) return true; for(const v of row){ if(!isCellEmpty(v)) return false; } return true; }
 
-function getCell(row, idx1){ // 1-based index
-  const i = idx1-1; return String((row && row.length>i && row[i]!=null? row[i] : '')).trim();
+function getCell(row, idx1){ // 1-based -> trimmed string, NBSP handled
+  const i = idx1-1; const v = (row && row.length>i ? row[i] : '');
+  return String(v == null ? '' : v).replace(/ /g,' ').trim();
+}
+
+function extractLessonName(raw, idx){
+  // raw already normalized to string, NBSP converted to space, trimmed
+  if(!raw) return `Lektion ${idx}`;
+  if(!raw.startsWith('*')) return null; // not a marker line
+  let name = raw.slice(1);                 // remove first '*'
+  name = name.replace(/^[\s ]+/, ''); // trim any leading spaces (space, tab, NBSP)
+  if(!name) name = `Lektion ${idx}`;
+  return name;
 }
 
 async function parseExcelBuffer(buf){ const wb=XLSX.read(buf,{type:'array'}); state.lessons.clear();
@@ -50,10 +63,10 @@ async function parseExcelBuffer(buf){ const wb=XLSX.read(buf,{type:'array'}); st
   const sh = wb.Sheets[shName];
   const rows = XLSX.utils.sheet_to_json(sh,{header:1,blankrows:false});
 
-  let lessonIdx=0; let currentKey=null; let current={ displayName:'', entries:[] };
+  let lessonIdx=0; let currentKey=null; let current=null;
   let emptyRun=0;
-
   const startRow = START_ROW_1BASED-1; // zero-based
+
   for(let r=startRow; r<rows.length; r++){
     const row = rows[r]||[];
 
@@ -61,18 +74,19 @@ async function parseExcelBuffer(buf){ const wb=XLSX.read(buf,{type:'array'}); st
       emptyRun++; if(emptyRun>MAX_EMPTY_RUN) break; else continue;
     } else emptyRun=0;
 
-    const c1 = getCell(row,1);
-    if(c1.includes('*')){
-      // start a new lesson; do not add this row
-      // finalize previous if exists
-      if(currentKey && current.entries.length>0){ state.lessons.set(currentKey, current); }
+    const c1raw = row[0];
+    const c1 = String(c1raw==null? '': c1raw).replace(/ /g,' ').trim();
+
+    const maybeName = extractLessonName(c1, lessonIdx+1);
+    if(maybeName!==null){
+      // finalize previous
+      if(currentKey && current && current.entries.length>0){ state.lessons.set(currentKey, current); }
       lessonIdx++; currentKey=String(lessonIdx);
-      let name = c1.length>=2? c1.substring(2).trim() : c1;
-      current={ displayName: name||(`Lektion ${lessonIdx}`), entries:[] };
-      continue;
+      current={ displayName: maybeName, entries:[] };
+      continue; // marker row is not a card
     }
 
-    // Collect one card using column mapping
+    // Build a card
     const w_de = getCell(row, COL_WORD.de);
     const w_py = getCell(row, COL_WORD.py);
     const w_zh = getCell(row, COL_WORD.zh);
@@ -85,16 +99,15 @@ async function parseExcelBuffer(buf){ const wb=XLSX.read(buf,{type:'array'}); st
 
     if(!(w_de || w_zh || s_de || s_zh)) continue; // skip filler lines
 
-    // If no lesson started yet, create a default one
-    if(!currentKey){ lessonIdx++; currentKey=String(lessonIdx); current={ displayName:`Lektion ${lessonIdx}`, entries:[] }; }
+    if(!currentKey){ // no marker yet -> create default
+      lessonIdx++; currentKey=String(lessonIdx); current={ displayName:`Lektion ${lessonIdx}`, entries:[] };
+    }
 
     current.entries.push({ word:{de:w_de, py:w_py, zh:w_zh}, sent:{de:s_de, py:s_py, zh:s_zh}, pos });
   }
-  // finalize last
-  if(currentKey && current.entries.length>0){ state.lessons.set(currentKey, current); }
+  if(currentKey && current && current.entries.length>0){ state.lessons.set(currentKey, current); }
 
   populateLessonSelect(); syncUISelectionWithSettings();
-  // Session total based on pool (if any)
 }
 
 async function loadExcel(){ try{ const res=await fetch(EXCEL_URL,{cache:'no-store'}); const buf=await res.arrayBuffer(); await parseExcelBuffer(buf); }catch(e){ console.error('Excel konnte nicht geladen werden:',e); alert('Konnte Datei nicht laden.'); } }

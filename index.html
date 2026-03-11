@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chinesisch Flashcards – r17.3.1 (Debug)</title>
+  <title>Chinesisch Flashcards – r17.3.2 (Debug)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
   <main class="container">
     <header>
       <h1>Flashcards <span class="muted">Deutsch ↔ 中文</span></h1>
-      <p class="subtitle">r17.3.1 – Einzelblatt‑Parser · Marker "*" → Lektionsname (alles nach erstem Stern) · Start ab Zeile 2</p>
+      <p class="subtitle">r17.3.2 – Einzelblatt‑Parser · Marker "*" → Lektionsname (alles nach erstem Stern) · Start ab Zeile 2</p>
       <div id="dbgStatus" class="dbg-status">Debug: initialisiere…</div>
       <div class="top-actions">
         <span class="muted small-label">Fortschritt:</span>
@@ -107,6 +107,12 @@
       <div id="sessionStats" class="stats-bar">—</div>
 
     </section>
+
+    <section class="card" id="resultsSection">
+      <div class="section-title">Ergebnisse</div>
+      <div class="lbl">Übersicht pro Lektion</div>
+      <table class="plain" id="resultsTable"></table>
+    </section>
   </main>
 
   <!-- Voices Panel -->
@@ -116,8 +122,11 @@
       <button id="btnCloseVoices" class="btn ghost">✕</button>
     </div>
     <div class="panel-body">
+      <div class="controls mb8">
+        <button id="btnVoicesRefresh" class="btn small">Aktualisieren</button>
+      </div>
       <div id="voicesList" class="voices"></div>
-      <div class="hint">Hinweis: In eingebetteten Seiten (Google Sites) werden Stimmen u.U. erst nach einer Benutzeraktion verfügbar.</div>
+      <div class="hint">Hinweis: In eingebetteten Seiten (Google Sites) stellen Browser Stimmen oft erst nach einer Benutzeraktion (Klick/Tap) bereit.</div>
     </div>
   </div>
 

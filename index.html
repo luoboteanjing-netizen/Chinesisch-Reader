@@ -1,13 +1,38 @@
 <!DOCTYPE html>
 <html lang='de'>
 <head>
-<meta charset='UTF-8'>
-<title>Flashcards</title>
-<script src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'></script>
+  <meta charset='UTF-8' />
+  <title>Flashcards</title>
+  <script src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'></script>
+  <style>
+    :root { --border:#e0e0e0; --text:#1a1a1a; --muted:#666; --bg:#fff; }
+    body { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); background:var(--bg); margin:24px; }
+    h1 { margin-top:0; }
+    .panel { border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:16px; background:#fff; box-shadow:0 1px 0 rgba(0,0,0,0.02); }
+    .panel h2 { font-size:18px; margin:0 0 8px 0; }
+    #lessonList { max-height:320px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:6px 8px; background:#fafafa; }
+    .lesson-item { display:flex; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px dashed #eee; }
+    .lesson-item:last-child { border-bottom:0; }
+    .lesson-item input[type='checkbox'] { transform:scale(1.05); cursor:pointer; }
+    .lesson-caption { display:inline-flex; gap:8px; align-items:baseline; }
+    .lesson-name { font-weight:500; }
+    .lesson-size { color:var(--muted); font-size:12px; }
+    .stats { color:var(--muted); }
+  </style>
 </head>
 <body>
-<h1>Flashcard App</h1>
-<ul id='lessonList'></ul>
-<script type='module' src='app.js'></script>
+  <h1>Flashcard App</h1>
+
+  <div class='panel'>
+    <h2>Lektionen</h2>
+    <div id='lessonList' role='listbox' aria-multiselectable='true' aria-label='Lektionsauswahl'></div>
+  </div>
+
+  <div class='panel stats'>
+    <div><strong>Ausgewählt:</strong> <span id='selectedCount'>0</span> / <span id='totalLessons'>0</span></div>
+    <div><strong>Karten insgesamt:</strong> <span id='cardCount'>0</span></div>
+  </div>
+
+  <script type='module' src='app.js'></script>
 </body>
 </html>

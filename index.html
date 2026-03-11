@@ -2,36 +2,105 @@
 <html lang='de'>
 <head>
   <meta charset='UTF-8' />
-  <title>Flashcards</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>Flashcards Deutsch ↔ 中文</title>
   <script src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'></script>
   <style>
-    :root { --border:#e0e0e0; --text:#1a1a1a; --muted:#666; --bg:#fff; }
-    body { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); background:var(--bg); margin:24px; }
-    h1 { margin-top:0; }
-    .panel { border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:16px; background:#fff; box-shadow:0 1px 0 rgba(0,0,0,0.02); }
-    .panel h2 { font-size:18px; margin:0 0 8px 0; }
-    #lessonList { max-height:320px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:6px 8px; background:#fafafa; }
-    .lesson-item { display:flex; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px dashed #eee; }
-    .lesson-item:last-child { border-bottom:0; }
-    .lesson-item input[type='checkbox'] { transform:scale(1.05); cursor:pointer; }
-    .lesson-caption { display:inline-flex; gap:8px; align-items:baseline; }
-    .lesson-name { font-weight:500; }
-    .lesson-size { color:var(--muted); font-size:12px; }
-    .stats { color:var(--muted); }
+    :root{
+      --bg:#0f1115; --panel:#151922; --muted:#9aa3b2; --text:#e6e8ec; --accent:#5b8cff; --border:#222833; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--text)}
+    header{padding:16px 20px; border-bottom:1px solid var(--border);}
+    h1{margin:0 0 4px 0; font-size:20px}
+    small{color:var(--muted)}
+
+    .container{display:grid; grid-template-columns: 1fr 1fr; gap:16px; padding:16px;}
+    .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px;}
+    .panel h2{margin:0 0 8px 0; font-size:16px}
+
+    #lessonList{max-height:300px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:6px; background:#0c0f14}
+    .lesson-item{display:flex; gap:10px; align-items:center; padding:6px 4px; border-bottom:1px dashed #1d2330}
+    .lesson-item:last-child{border-bottom:none}
+    .lesson-size{color:var(--muted); font-size:12px}
+
+    .row{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{appearance:none; border:1px solid var(--border); background:#0d121a; color:var(--text); padding:8px 10px; border-radius:8px; cursor:pointer}
+    .btn:hover{border-color:#2a3346}
+    .btn.primary{background:var(--accent); border-color:transparent; color:#fff}
+    .btn.green{background:var(--ok); border-color:transparent}
+    .btn.yellow{background:var(--warn); border-color:transparent}
+    .btn.red{background:var(--bad); border-color:transparent}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
+    .seg{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden}
+    .seg button{border:0; background:transparent; color:var(--text); padding:8px 12px; cursor:pointer}
+    .seg button.active{background:#0c0f14}
+
+    /* Karte */
+    .card-panel{grid-column:1 / -1}
+    .card{background:#0c0f14; border:1px solid var(--border); border-radius:10px; padding:16px; min-height:120px; font-size:18px}
+    .card .front{opacity:.95}
+    .card .back{opacity:.95; margin-top:12px; padding-top:12px; border-top:1px dashed #1d2330}
+
+    .foot{display:grid; grid-template-columns: 1fr 1fr; gap:16px}
+    .ratings{display:grid; grid-template-columns: repeat(3, 1fr); gap:8px}
+    .hint{color:var(--muted); font-size:12px}
   </style>
 </head>
 <body>
-  <h1>Flashcard App</h1>
+  <header>
+    <h1>Flashcards Deutsch ↔ 中文</h1>
+    <small>Lektion wählen, Richtung festlegen und mit Mini‑SRS lernen</small>
+  </header>
 
-  <div class='panel'>
-    <h2>Lektionen</h2>
-    <div id='lessonList' role='listbox' aria-multiselectable='true' aria-label='Lektionsauswahl'></div>
-  </div>
+  <main class='container'>
+    <section class='panel'>
+      <h2>Lektion(en)</h2>
+      <div id='lessonList' role='listbox' aria-multiselectable='true' aria-label='Lektionsauswahl'></div>
+      <div class='row' style='margin-top:8px'>
+        <button class='btn' id='applyBtn'>Übernehmen</button>
+        <button class='btn' id='clearBtn'>Leeren</button>
+        <div class='hint'><span id='selCount'>0</span>/<span id='totalLessons'>0</span> · Karten: <span id='selCards'>0</span></div>
+      </div>
+    </section>
 
-  <div class='panel stats'>
-    <div><strong>Ausgewählt:</strong> <span id='selectedCount'>0</span> / <span id='totalLessons'>0</span></div>
-    <div><strong>Karten insgesamt:</strong> <span id='cardCount'>0</span></div>
-  </div>
+    <section class='panel'>
+      <h2>Richtung</h2>
+      <div class='row'>
+        <div class='seg' id='dirSeg'>
+          <button data-dir='DEtoZH' class='active'>DE → ZH</button>
+          <button data-dir='ZHtoDE'>ZH → DE</button>
+        </div>
+        <div class='seg' id='orderSeg'>
+          <button data-order='sequential' class='active'>Sequenziell</button>
+          <button data-order='random'>Zufällig</button>
+        </div>
+        <button class='btn primary' id='startBtn'>Training starten ▶</button>
+      </div>
+    </section>
+
+    <section class='panel card-panel'>
+      <h2>Karte</h2>
+      <div class='card' id='card'>
+        <div class='front' id='cardFront'>—</div>
+        <div class='back' id='cardBack' style='display:none'>—</div>
+      </div>
+      <div class='row' style='margin-top:10px'>
+        <button class='btn' id='prevBtn'>⟵ Zurück</button>
+        <button class='btn' id='revealBtn'>Jetzt aufdecken 👁️</button>
+        <button class='btn' id='nextBtn'>Nächste Karte ⟶</button>
+      </div>
+
+      <div class='foot' style='margin-top:10px'>
+        <div class='ratings'>
+          <button class='btn green' id='knowBtn'>Gewusst</button>
+          <button class='btn yellow' id='unsureBtn'>Unsicher</button>
+          <button class='btn red' id='dontBtn'>Nicht gewusst</button>
+        </div>
+        <div class='hint' id='infoText'>Bereit.</div>
+      </div>
+    </section>
+  </main>
 
   <script type='module' src='app.js'></script>
 </body>

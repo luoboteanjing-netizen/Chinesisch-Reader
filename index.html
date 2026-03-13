@@ -10,24 +10,15 @@
   <header>
     <h1>Flashcards – Chinesisch/Deutsch</h1>
     <div class="controls">
-      <select id="side" title="Vorderseite wählen">
+      <select id="side">
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
-
-      <select id="mode" title="Lernmodus">
-        <option value="basic">Modus: Einfach</option>
-        <option value="sm2">Modus: SM‑2 (Spaced Repetition)</option>
-      </select>
-
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
       <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
-
       <button class="btn" id="exportJson" title="Aktuelle Auswahl als JSON speichern">Export JSON</button>
       <input type="file" id="importFile" accept="application/json" style="display:none" />
       <button class="btn" id="importJson" title="JSON laden und anzeigen">Import JSON</button>
-
-      <button class="btn danger" id="resetProgress" title="Gespeicherten Fortschritt zurücksetzen">Reset Fortschritt</button>
     </div>
   </header>
 
@@ -42,7 +33,7 @@
       </div>
       <div class="filter-actions">
         <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
-        <span class="hint">(Modus oben wählbar • Shuffle/SM‑2 • Zähler)</span>
+        <span class="hint">(shuffle, nächste Karte, Zähler)</span>
       </div>
     </section>
 
@@ -57,17 +48,14 @@
         <button class="btn" id="exitStudy">Zurück zur Liste</button>
         <button class="btn" id="reshuffle">Shuffle neu</button>
         <div class="counter" id="counter">0 / 0</div>
-        <div class="dueinfo" id="dueInfo">Fällige: 0</div>
       </div>
       <div class="study-card" id="studyCard">
         <div class="id" id="studyId"></div>
         <div class="lines" id="studyLines"></div>
-        <div class="actions" id="studyActions">
-          <!-- Buttons werden je nach Modus erstellt -->
+        <div class="actions">
+          <button class="btn" id="flipOne">Umdrehen</button>
+          <button class="btn" id="nextOne">Nächste Karte</button>
         </div>
-      </div>
-      <div class="muted small" id="hintSm2" style="display:none;">
-        SM‑2 Bewertung: <b>Again (0‑2)</b> • <b>Hard (3)</b> • <b>Good (4)</b> • <b>Easy (5)</b>
       </div>
     </section>
   </main>

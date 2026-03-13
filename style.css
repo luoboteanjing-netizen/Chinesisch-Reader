@@ -4,7 +4,6 @@
   --muted: #9aa0a6;
   --card: #16181d;
   --accent: #4cc2ff;
-  --danger: #ff5c5c;
 }
 *{ box-sizing:border-box; }
 body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); }
@@ -14,18 +13,13 @@ h1{ font-size:18px; margin:0; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
 .controls .btn{ cursor:pointer; }
-.controls .danger{ border-color: #3a2a2a; color:#ffdede; background:#241112; }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
 .id{ color: var(--muted); font-size: 12px; }
 .lines{ margin:8px 0; line-height:1.5; }
 .line{ margin:2px 0; }
-.actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.actions{ display:flex; gap:8px; }
 .btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; cursor:pointer; }
-.btn.sm2-again{ background:#2a1212; border-color:#4a2222; }
-.btn.sm2-hard{ background:#2a2412; border-color:#4a4422; }
-.btn.sm2-good{ background:#122a12; border-color:#224a22; }
-.btn.sm2-easy{ background:#12242a; border-color:#22444a; }
 .empty{ color: var(--muted); padding: 24px; text-align:center; }
 .small{ font-size: 12px; }
 .muted{ color: var(--muted); }
@@ -44,10 +38,9 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 /* Lernmodus */
 .study-bar{ display:flex; align-items:center; gap:8px; justify-content:flex-start; margin-bottom: 12px; }
 .counter{ margin-left:auto; color:var(--muted); }
-.dueinfo{ margin-left:12px; color:var(--muted); }
 .study-card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 220px; display:flex; flex-direction:column; gap:12px; }
 
-/* Wortart (POS) hellgrau in Klammern direkt hinter dem Wort, 2px kleiner */
-.pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
+/* Wortart (POS) hellgrau in Klammern direkt hinter dem Wort) */
+.pos{ color: var(--muted); font-style: normal; }
 .wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }

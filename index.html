@@ -1,92 +1,22 @@
-<!DOCTYPE html>
-<html lang="de">
+<!doctype html>
+<html lang='de'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcards Deutsch ↔ 中文</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Flashcards</title>
+<style>
+body{font-family:system-ui;background:#111;color:#eee;margin:0;padding:16px}
+.card{background:#1c1c1c;border-radius:8px;padding:12px;margin:8px 0}
+button{margin-top:8px}
+</style>
 </head>
 <body>
-    <header>
-        <h1>Flashcards Deutsch ↔ 中文</h1>
-    </header>
-
-    <nav class="tabs">
-        <button class="tab-btn active" data-tab="einfuehrung">Einführung</button>
-        <button class="tab-btn" data-tab="einstellungen">Einstellungen</button>
-        <button class="tab-btn" data-tab="lektionen">Lektionen</button>
-    </nav>
-
-    <div class="main-container">
-        <!-- Einführung Tab -->
-        <div id="einfuehrung" class="tab-content active">
-            <h2>Willkommen!</h2>
-            <p>Lerne Vokabeln und Sätze mit interaktiven Flashcards. Wähle Lektionen aus der Excel-Datei, passe Einstellungen an und starte dein Training.</p>
-        </div>
-
-        <!-- Einstellungen Tab -->
-        <div id="einstellungen" class="tab-content">
-            <div class="sprach-modus">
-                <h3>Sprachmodus</h3>
-                <button id="de-btn" class="mode-btn active">DE</button>
-                <button id="zh-btn" class="mode-btn">ZH</button>
-            </div>
-            <div class="slider-group">
-                <label>Pause zwischen Karten (Sekunden): <span id="pause-value">2</span></label>
-                <input type="range" id="pause-slider" min="0" max="5" value="2" step="1">
-            </div>
-            <div class="slider-group">
-                <label>Anzahl Karten: <span id="karten-value">Alle</span></label>
-                <input type="range" id="karten-slider" min="1" max="50" value="50">
-            </div>
-            <div class="slider-group">
-                <label>Trainingszeit (Minuten): <span id="zeit-value">10</span></label>
-                <input type="range" id="zeit-slider" min="5" max="60" value="10" step="5">
-            </div>
-            <button id="start-session" class="btn">Session starten</button>
-        </div>
-
-        <!-- Lektionen Tab -->
-        <div id="lektionen" class="tab-content">
-            <div class="lektionen-container">
-                <h3>Lektionen auswählen</h3>
-                <div id="lektionen-list" class="scrollable"></div>
-                <p id="karten-anzahl">Ausgewählte Karten: 0</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Karte-Bereich (wird bei Session sichtbar) -->
-    <div id="karte-container" class="karte-container hidden">
-        <div class="karte-status">
-            <span id="karten-status">Karte 0/0</span>
-            <div id="timer-bar" class="timer-bar"></div>
-        </div>
-        <div class="karte-wrapper">
-            <div id="karte" class="karte">
-                <div class="karte-front">
-                    <h2 id="front-title"></h2>
-                    <p id="front-subtitle"></p>
-                </div>
-                <div class="karte-back">
-                    <h2 id="back-title"></h2>
-                    <p id="back-subtitle"></p>
-                </div>
-            </div>
-        </div>
-        <div class="karte-nav">
-            <button id="next-btn" class="btn">Zum nächsten</button>
-            <button id="skip-btn" class="btn secondary">Überspringen Karte</button>
-            <button id="pause-btn" class="btn">X</button>
-        </div>
-    </div>
-
-    <div id="error-modal" class="modal hidden">
-        <p id="error-message"></p>
-        <button id="close-error">OK</button>
-    </div>
-
-    <script src="app.js"></script>
+<h1>Flashcards</h1>
+<select id='side'>
+<option value='zh'>Chinesisch</option>
+<option value='de'>Deutsch</option>
+</select>
+<div id='cards'></div>
+<script src='app.js'></script>
 </body>
 </html>

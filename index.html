@@ -3,16 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flashcards – Chinesisch/Deutsch (CSV direkt)</title>
+  <title>Flashcards – Chinesisch/Deutsch</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Kleine Styles für den neuen Lektionen-Bereich */
-    .filters { display:flex; flex-direction:column; gap:8px; }
-    .lesson-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #2a2f39; border-radius:16px; background:#0e1116; color:#e7e7e7; }
-    .chip input { accent-color:#4cc2ff; }
-    .legend { font-size:12px; color:#9aa0a6; }
-  </style>
 </head>
 <body>
   <header>
@@ -22,26 +14,52 @@
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
-      <input id="q" placeholder="Suche in beiden Seiten..." />
-      <button class="toggle" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+      <input id="q" placeholder="Suche (Töne ignoriert)…" />
+      <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+      <button class="btn" id="exportJson" title="Aktuelle Auswahl als JSON speichern">Export JSON</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" />
+      <button class="btn" id="importJson" title="JSON laden und anzeigen">Import JSON</button>
     </div>
   </header>
 
   <main class="container">
     <div id="meta" class="muted small"></div>
 
-    <!-- NEU: Lektions-Filter -->
     <section class="filters">
-      <div class="legend">Lektionen auswählen (aus ID, erste 3 Zeichen):</div>
-      <div id="lessonFilters" class="lesson-row"><!-- Chips werden per JS eingefügt --></div>
+      <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – scrollbare Auswahl</div>
+      <div class="lesson-box">
+        <label class="chip"><input type="checkbox" id="lesson_all" checked> Alle</label>
+        <div id="lessonFilters" class="lesson-list"><!-- erzeugt per JS --></div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
+        <span class="hint">(shuffle, nächste Karte, Zähler)</span>
+      </div>
     </section>
 
-    <div id="count"></div>
-    <div class="grid" id="grid"></div>
-    <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
+    <section id="listView">
+      <div id="count"></div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
+    </section>
+
+    <section id="studyView" style="display:none;">
+      <div class="study-bar">
+        <button class="btn" id="exitStudy">Zurück zur Liste</button>
+        <button class="btn" id="reshuffle">Shuffle neu</button>
+        <div class="counter" id="counter">0 / 0</div>
+      </div>
+      <div class="study-card" id="studyCard">
+        <div class="id" id="studyId"></div>
+        <div class="lines" id="studyLines"></div>
+        <div class="actions">
+          <button class="btn" id="flipOne">Umdrehen</button>
+          <button class="btn" id="nextOne">Nächste Karte</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="app.js"></script>
 </body>
 </html>
-``

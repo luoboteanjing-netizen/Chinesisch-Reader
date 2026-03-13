@@ -1,22 +1,30 @@
 <!doctype html>
-<html lang='de'>
+<html lang="de">
 <head>
-<meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-<title>Flashcards</title>
-<style>
-body{font-family:system-ui;background:#111;color:#eee;margin:0;padding:16px}
-.card{background:#1c1c1c;border-radius:8px;padding:12px;margin:8px 0}
-button{margin-top:8px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flashcards – Chinesisch/Deutsch (CSV direkt)</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<h1>Flashcards</h1>
-<select id='side'>
-<option value='zh'>Chinesisch</option>
-<option value='de'>Deutsch</option>
-</select>
-<div id='cards'></div>
-<script src='app.js'></script>
+  <header>
+    <h1>Flashcards – Chinesisch/Deutsch</h1>
+    <div class="controls">
+      <select id="side">
+        <option value="zh">Seite: Chinesisch</option>
+        <option value="de">Seite: Deutsch</option>
+      </select>
+      <input id="q" placeholder="Suche in beiden Seiten..." />
+      <button class="toggle" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+    </div>
+  </header>
+  <main class="container">
+    <div id="meta" class="muted small"></div>
+    <div id="count"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>

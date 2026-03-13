@@ -1,27 +1,25 @@
 
-// --- Konfiguration ---
 const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
 
-// ---------- Hilfsfunktionen ----------
 function detectDelimiter(sample){
-  const first = sample.split(/?
-/)[0] || '';
-  const count = ch => (first.match(new RegExp(`\${ch}`,'g'))||[]).length;
-  const cand = [{d:',',n:count(',')},{d:';',n:count(';')},{d:'	',n:count('	')},{d:'|',n:count('|')}];
-  cand.sort((a,b)=>b.n-a.n);
-  return cand[0].n>0 ? cand[0].d : ';';
+  const first = (sample.split(/\r?\n/)[0] || '');
+  const countSplit = (line, delim) => (line.length ? line.split(delim).length - 1 : 0);
+  const candidates = [
+    { d: ',', n: countSplit(first, ',') },
+    { d: ';', n: countSplit(first, ';') },
+    { d: '\t', n: countSplit(first, '\t') },
+    { d: '|', n: countSplit(first, '|') }
+  ];
+  candidates.sort((a,b)=>b.n-a.n);
+  return candidates[0].n>0 ? candidates[0].d : ';';
 }
 
 function parseCSV(text){
   const delimiter = detectDelimiter(text);
-  const lines = text.replace(/
-/g,'
-').replace(//g,'
-').split('
-');
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
   const rows = [];
   for (let li=0; li<lines.length; li++){
-    let line = lines[li];
+    const line = lines[li];
     if (!line.trim()){ rows.push([]); continue; }
     const out = []; let cur=''; let i=0; let inQ=false;
     while(i<line.length){
@@ -33,7 +31,7 @@ function parseCSV(text){
         } else { cur+=ch; i++; continue; }
       } else {
         if(ch==='"'){ inQ=true; i++; continue; }
-        const isDelim=(delimiter==='	'? ch==='	' : ch===delimiter);
+        const isDelim = (delimiter==='\t' ? ch==='\t' : ch===delimiter);
         if(isDelim){ out.push(cur); cur=''; i++; continue; }
         cur+=ch; i++;
       }
@@ -56,10 +54,9 @@ function isHeaderRow(cells){
 
 function stripToneMarks(s){
   if(!s) return s;
-  try{ return s.normalize('NFD').replace(/[̀-ͯ]/g,''); }catch{ return s; }
+  try{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch{ return s; }
 }
 
-// Ton-ignorierendes Highlighting
 function highlightToneInsensitive(originalText, query){
   if(!query) return originalText;
   const qNorm = stripToneMarks(query).toLowerCase();
@@ -85,7 +82,6 @@ function formatLesson(code){
   return 'L' + String(n).padStart(2,'0');
 }
 
-// ---------- Daten aufbereiten ----------
 function toCards(rows){
   const cards=[]; let start=0;
   if(rows.length && isHeaderRow(rows[0])) start=1;
@@ -93,7 +89,6 @@ function toCards(rows){
     const r = rows[i]||[];
     const c = idx => (r[idx]||'').trim();
 
-    // Skip: erste Zelle enthält *
     if((c(0)||'').includes('*')) continue;
 
     const de_word=c(0), py_word=c(1), pos=c(2), py_sent=c(3), de_sent=c(4), hz_word=c(5), hz_sent=c(6), id_raw=c(7);
@@ -107,7 +102,6 @@ function toCards(rows){
   return cards;
 }
 
-// ---------- UI Listenansicht ----------
 function buildLessonFilters(cards){
   const box = document.getElementById('lessonFilters');
   box.innerHTML='';
@@ -155,23 +149,21 @@ function renderList(cards){
 
   filtered.forEach(c=>{
     const el = document.createElement('div'); el.className='card';
-    let current = sideSel.value; // 'zh'|'de'
-
+    let current = sideSel.value;
     const idDiv = document.createElement('div'); idDiv.className='id';
     idDiv.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
-
     const linesDiv = document.createElement('div'); linesDiv.className='lines';
 
     function makeLines(){
       const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
       if(current==='zh'){
-        const l1 = (c.word.hanzi||'') + posSpan; // Wort Hanzi + (POS)
-        const l2 = c.word.pinyin||'';            // Wort Pinyin
-        const l3 = c.sentence.hanzi||'';         // Satz Hanzi
-        const l4 = c.sentence.pinyin||'';        // Satz Pinyin
+        const l1 = (c.word.hanzi||'') + posSpan;
+        const l2 = c.word.pinyin||'';
+        const l3 = c.sentence.hanzi||'';
+        const l4 = c.sentence.pinyin||'';
         return [l1,l2,l3,l4].filter(Boolean);
       } else {
-        const l1 = (c.word.de||'') + (c.word.pos? ` <span class="pos">(${c.word.pos})</span>`:''); // Deutsch + (POS)
+        const l1 = (c.word.de||'') + (c.word.pos? ` <span class="pos">(${c.word.pos})</span>`:'');
         const l2 = c.sentence.de||'';
         return [l1,l2].filter(Boolean);
       }
@@ -199,20 +191,13 @@ function renderList(cards){
   });
 }
 
-// ---------- Lernmodus ----------
 let study = { queue:[], idx:0, side:'zh' };
-
-function shuffleArray(a){
-  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
-}
-
+function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
 function enterStudy(cards){
   const selectedLessons = getSelectedLessons();
   const qRaw = document.getElementById('q').value.trim();
   const qNorm = stripToneMarks(qRaw).toLowerCase();
   const restrict = selectedLessons.length>0;
-  // gleiche Filter wie Liste
   let pool = cards.filter(c=>{
     if(restrict && !selectedLessons.includes(c.lesson)) return false;
     if(!qNorm) return true;
@@ -221,26 +206,17 @@ function enterStudy(cards){
   });
   pool = shuffleArray(pool.slice());
   if(pool.length===0){ alert('Keine Karten in der Auswahl.'); return; }
-
-  study.queue = pool; study.idx = 0; study.side = document.getElementById('side').value;
+  study.queue = pool; study.idx=0; study.side = document.getElementById('side').value;
   document.getElementById('listView').style.display='none';
   document.getElementById('studyView').style.display='block';
   drawStudy();
 }
-
-function exitStudy(){
-  document.getElementById('studyView').style.display='none';
-  document.getElementById('listView').style.display='block';
-}
-
+function exitStudy(){ document.getElementById('studyView').style.display='none'; document.getElementById('listView').style.display='block'; }
 function drawStudy(){
   const c = study.queue[study.idx];
-  const idEl = document.getElementById('studyId');
-  idEl.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
-  const linesEl = document.getElementById('studyLines');
-  linesEl.innerHTML='';
-
-  const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
+  const idEl = document.getElementById('studyId'); idEl.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
+  const linesEl = document.getElementById('studyLines'); linesEl.innerHTML='';
+  const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
   let lines;
   if(study.side==='zh'){
     const l1 = (c.word.hanzi||'') + posSpan;
@@ -249,42 +225,17 @@ function drawStudy(){
     const l4 = c.sentence.pinyin||'';
     lines = [l1,l2,l3,l4].filter(Boolean);
   } else {
-    const l1 = (c.word.de||'') + (c.word.pos? ` <span class="pos">(${c.word.pos})</span>`:'');
+    const l1 = (c.word.de||'') + (c.word.pos? ` <span class=\"pos\">(${c.word.pos})</span>`:'');
     const l2 = c.sentence.de||'';
     lines = [l1,l2].filter(Boolean);
   }
-  lines.forEach((line, i)=>{
-    const div=document.createElement('div');
-    div.className = 'line' + (i===0? ' wordline':'' ) + (study.side==='zh' && i===0? ' zh':'' );
-    div.innerHTML = line;
-    linesEl.appendChild(div);
-  });
-
+  lines.forEach((line,i)=>{ const div=document.createElement('div'); div.className='line'+(i===0?' wordline':'')+(study.side==='zh'&&i===0?' zh':''); div.innerHTML=line; linesEl.appendChild(div); });
   document.getElementById('counter').textContent = `${study.idx+1} / ${study.queue.length}`;
 }
+function nextStudy(){ if(study.queue.length===0) return; study.idx=(study.idx+1)%study.queue.length; drawStudy(); }
+function flipStudy(){ study.side=(study.side==='zh'?'de':'zh'); drawStudy(); }
+function reshuffleStudy(){ if(study.queue.length<=1) return; const current=study.queue[study.idx]; shuffleArray(study.queue); const idx=study.queue.findIndex(x=>x.id===current.id); if(idx>0){ const [item]=study.queue.splice(idx,1); study.queue.unshift(item); study.idx=0; } drawStudy(); }
 
-function nextStudy(){
-  if(study.queue.length===0) return;
-  study.idx = (study.idx + 1) % study.queue.length;
-  drawStudy();
-}
-
-function flipStudy(){
-  study.side = (study.side==='zh' ? 'de' : 'zh');
-  drawStudy();
-}
-
-function reshuffleStudy(){
-  if(study.queue.length<=1) return;
-  const current = study.queue[study.idx];
-  shuffleArray(study.queue);
-  // Optional: Start wieder bei aktueller Karte an erster Stelle
-  const idx = study.queue.findIndex(x=>x.id===current.id);
-  if(idx>0){ const [item]=study.queue.splice(idx,1); study.queue.unshift(item); study.idx=0; }
-  drawStudy();
-}
-
-// ---------- Export / Import ----------
 function exportJSON(cards){
   const selectedLessons = getSelectedLessons();
   const qRaw = document.getElementById('q').value.trim();
@@ -299,8 +250,7 @@ function exportJSON(cards){
   const payload = { meta:{ exported_at: new Date().toISOString(), count: filtered.length }, cards: filtered };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='cards_snapshot.json'; a.click();
-  URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href=url; a.download='cards_snapshot.json'; a.click(); URL.revokeObjectURL(url);
 }
 
 function importJSON(setCards){
@@ -311,12 +261,7 @@ function importJSON(setCards){
     try{
       const data = JSON.parse(text);
       if(Array.isArray(data.cards)){
-        setCards(data.cards.map(c=>({
-          id: c.id,
-          lesson: c.lesson || String((c.id||'').slice(0,3)),
-          word: c.word||{},
-          sentence: c.sentence||{}
-        })));
+        setCards(data.cards.map(c=>({ id:c.id, lesson:c.lesson||String((c.id||'').slice(0,3)), word:c.word||{}, sentence:c.sentence||{} })));
       } else { alert('Ungültiges JSON: Feld "cards" fehlt.'); }
     }catch(e){ alert('Fehler beim JSON-Import: '+e.message); }
     input.value='';
@@ -324,7 +269,6 @@ function importJSON(setCards){
   input.click();
 }
 
-// ---------- App Start ----------
 (async function(){
   try{
     const t0 = performance.now();
@@ -332,34 +276,25 @@ function importJSON(setCards){
     const { rows, delimiter } = parseCSV(text);
     let cards = toCards(rows);
     const t1 = performance.now();
-
-    const meta = document.getElementById('meta');
-    meta.textContent = `CSV geladen • Delimiter: "${delimiter==='	'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1-t0)} ms`;
-
+    document.getElementById('meta').textContent = `CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1-t0)} ms`;
     buildLessonFilters(cards);
     renderList(cards);
-
-    // UI Events
     const sideSel = document.getElementById('side');
     const q = document.getElementById('q');
     sideSel.addEventListener('change', ()=> renderList(cards));
     q.addEventListener('input', ()=> renderList(cards));
     document.getElementById('flipAll').addEventListener('click', ()=>{ sideSel.value=(sideSel.value==='zh'?'de':'zh'); renderList(cards); });
-
     document.getElementById('lesson_all').addEventListener('change', ()=> renderList(cards));
     document.getElementById('lessonFilters').addEventListener('change', ()=> renderList(cards));
-
     document.getElementById('startStudy').addEventListener('click', ()=> enterStudy(cards));
     document.getElementById('exitStudy').addEventListener('click', ()=> exitStudy());
     document.getElementById('nextOne').addEventListener('click', ()=> nextStudy());
     document.getElementById('flipOne').addEventListener('click', ()=> flipStudy());
     document.getElementById('reshuffle').addEventListener('click', ()=> reshuffleStudy());
-
     document.getElementById('exportJson').addEventListener('click', ()=> exportJSON(cards));
     document.getElementById('importJson').addEventListener('click', ()=> importJSON((newCards)=>{ cards=newCards; buildLessonFilters(cards); renderList(cards); exitStudy(); }));
-
-  }catch(err){
-    document.getElementById('meta').textContent = 'Fehler: '+err.message;
+  } catch (err){
+    document.getElementById('meta').textContent = 'Fehler: ' + err.message;
     console.error(err);
   }
 })();

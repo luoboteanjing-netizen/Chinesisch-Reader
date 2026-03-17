@@ -30,43 +30,29 @@
       </div>
       <div class="filter-actions">
         <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
-        <span class="hint">(Einzelkarten-Ansicht mit Aufdecken & Zählern)</span>
+        <span class="hint">(Einzelkarten-Ansicht mit Aufdecken)</span>
       </div>
     </section>
 
-    <!-- EINZELKARTEN-ANSICHT -->
+    <!-- EINZELKARTEN-ANSICHT (ohne Zähler) -->
     <section id="studyView" style="display:none;">
       <div class="study-bar">
         <div class="counter" id="counter">0 / 0</div>
-        <div class="muted small" id="progressInfo"></div>
       </div>
-
-      <!-- Oberes Feld: Frage (sichtbar) -->
       <div class="panel" id="questionPanel">
         <div class="id" id="studyId"></div>
         <div class="lines" id="questionLines"></div>
       </div>
-
-      <!-- Unteres Feld: Antwort (leer bis Aufdecken) -->
       <div class="panel answer" id="answerPanel">
         <div class="lines" id="answerLines"></div>
       </div>
-
       <div class="actions trio" id="navActions">
         <button class="btn" id="prevOne">Zurück</button>
         <button class="btn primary" id="revealOne">Aufdecken</button>
         <button class="btn" id="nextOne">Nächste Karte</button>
       </div>
-
-      <div class="actions result" id="resultActions" style="display:none;">
-        <button class="btn success" id="knewIt">Gewusst</button>
-        <button class="btn danger" id="notKnew">Nicht gewusst</button>
-      </div>
-
-      <div class="muted small" id="hintReveal">Tipp: Du siehst oben die abgefragte Vokabel. Nach dem Aufdecken erscheint die Lösung unten, die Vokabel oben bleibt sichtbar.</div>
+      <!-- Keine Gewusst/Nicht gewusst Buttons mehr -->
     </section>
-
-    <!-- (Die alte Listenansicht wird nicht mehr verwendet und entfernt) -->
   </main>
 
   <script src="app.js"></script>

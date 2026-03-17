@@ -1,6 +1,5 @@
 :root{
-  --bg: #0b0c0f; --fg: #e7e7e7; --muted:#9aa0a6; --card:#16181d; --accent:#4cc2ff;
-  --success:#1f7a3e; --danger:#a33a3a; --primary:#2b3a55;
+  --bg: #0b0c0f; --fg: #e7e7e7; --muted:#9aa0a6; --card:#16181d; --accent:#4cc2ff; --primary:#2b3a55;
 }
 *{ box-sizing:border-box; }
 body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); }
@@ -12,7 +11,6 @@ h1{ font-size:18px; margin:0; }
 .controls .btn{ cursor:pointer; }
 .controls-block{ width:100%; margin-top:10px; }
 @media (max-width: 600px){ .controls-block select, .controls-block input, .controls-block button{ flex:1 1 100%; } }
-
 .legend{ font-size:12px; color:var(--muted); }
 .filters{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
 .lesson-box{ border:1px solid #2a2f39; border-radius:12px; background:#0e1116; padding:10px; }
@@ -21,8 +19,6 @@ h1{ font-size:18px; margin:0; }
 .chip input{ accent-color: var(--accent); }
 .filter-actions{ display:flex; align-items:center; gap:8px; }
 .hint{ color:var(--muted); font-size:12px; }
-
-/* Einzelkarten-Ansicht */
 .study-bar{ display:flex; align-items:center; gap:8px; justify-content:space-between; margin-bottom:12px; }
 .counter{ color:#c7c7c7; }
 .panel{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 120px; display:flex; flex-direction:column; gap:8px; }
@@ -30,15 +26,10 @@ h1{ font-size:18px; margin:0; }
 .lines{ line-height:1.5; }
 .line{ margin:2px 0; }
 .id{ color: var(--muted); font-size: 12px; }
-
 .actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
 .actions.trio{ justify-content:space-between; }
 .btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:10px 14px; cursor:pointer; }
 .btn.primary{ background: var(--primary); border-color:#3a4a6a; }
-.btn.success{ background:#0e1612; border-color:#2f6043; color:#d7f5e5; }
-.btn.danger{ background:#1a0e0e; border-color:#5c2a2a; color:#ffdede; }
-
-/* Wortart 2px kleiner und hellgrau */
 .pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
 .wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }

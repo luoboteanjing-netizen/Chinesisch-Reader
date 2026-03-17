@@ -9,15 +9,13 @@
 <body>
   <header>
     <h1>Flashcards – Chinesisch/Deutsch</h1>
-
-    <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
     <div class="controls controls-block">
       <select id="side" title="Vorderseite wählen">
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
-      <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+      <button class="btn" id="flipAll" title="Seite umschalten">Alle umdrehen</button>
     </div>
   </header>
 
@@ -28,7 +26,7 @@
       <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – scrollbare Auswahl</div>
       <div class="lesson-box">
         <label class="chip"><input type="checkbox" id="lesson_all" checked> Alle</label>
-        <div id="lessonFilters" class="lesson-list"><!-- erzeugt per JS --></div>
+        <div id="lessonFilters" class="lesson-list"></div>
       </div>
       <div class="filter-actions">
         <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
@@ -36,21 +34,17 @@
       </div>
     </section>
 
-    <!-- Einzelkarten-Ansicht: Frage oben, Antwort unten -->
     <section id="studyView" style="display:none;">
       <div class="study-bar">
         <div class="counter" id="counter">0 / 0</div>
       </div>
-
       <div class="panel" id="questionPanel">
         <div class="id" id="studyId"></div>
         <div class="lines" id="questionLines"></div>
       </div>
-
       <div class="panel answer" id="answerPanel">
         <div class="lines" id="answerLines"></div>
       </div>
-
       <div class="actions trio" id="navActions">
         <button class="btn" id="prevOne">Zurück</button>
         <button class="btn primary" id="revealOne">Aufdecken</button>

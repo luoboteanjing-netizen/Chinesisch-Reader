@@ -4,6 +4,7 @@
   --muted: #9aa0a6;
   --card: #16181d;
   --accent: #4cc2ff;
+  --primary: #2b3a55;
 }
 *{ box-sizing:border-box; }
 body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); }
@@ -13,24 +14,12 @@ h1{ font-size:18px; margin:0; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
 .controls .btn{ cursor:pointer; }
-/* Neu: Controls unter dem Titel, mobilfreundlich */
 .controls-block{ width:100%; margin-top:10px; }
 @media (max-width: 600px){
   .controls-block select,
   .controls-block input,
   .controls-block button{ flex:1 1 100%; }
 }
-.grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
-.card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
-.id{ color: var(--muted); font-size: 12px; }
-.lines{ margin:8px 0; line-height:1.5; }
-.line{ margin:2px 0; }
-.actions{ display:flex; gap:8px; }
-.btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; cursor:pointer; }
-.empty{ color: var(--muted); padding: 24px; text-align:center; }
-.small{ font-size: 12px; }
-.muted{ color: var(--muted); }
-mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 
 /* Lektionen */
 .filters{ display:flex; flex-direction:column; gap:10px; margin-bottom: 12px; }
@@ -42,12 +31,23 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 .filter-actions{ display:flex; align-items:center; gap:8px; }
 .hint{ color:var(--muted); font-size:12px; }
 
-/* Lernmodus */
-.study-bar{ display:flex; align-items:center; gap:8px; justify-content:flex-start; margin-bottom: 12px; }
-.counter{ margin-left:auto; color:var(--muted); }
-.study-card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 220px; display:flex; flex-direction:column; gap:12px; }
+/* Einzelkarte */
+.study-bar{ display:flex; align-items:center; gap:8px; justify-content:space-between; margin-bottom:12px; }
+.counter{ color:#c7c7c7; }
+.panel{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 120px; display:flex; flex-direction:column; gap:8px; }
+.panel.answer{ margin-top:12px; min-height:140px; }
+.lines{ line-height:1.5; }
+.line{ margin:2px 0; }
+.id{ color: var(--muted); font-size: 12px; }
+.actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.actions.trio{ justify-content:space-between; }
+.btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:10px 14px; cursor:pointer; }
+.btn.primary{ background: var(--primary); border-color:#3a4a6a; }
 
 /* Wortart 2px kleiner und hellgrau */
 .pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
 .wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }
+.small{ font-size:12px; }
+.muted{ color:var(--muted); }
+mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }

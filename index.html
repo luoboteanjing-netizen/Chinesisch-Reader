@@ -9,15 +9,13 @@
 <body>
   <header>
     <h1>Flashcards – Chinesisch/Deutsch</h1>
-
-    <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
     <div class="controls controls-block">
       <select id="side" title="Vorderseite wählen">
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
-      <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+      <button class="btn" id="flipAll" title="Seite umschalten">Alle umdrehen</button>
     </div>
   </header>
 
@@ -28,35 +26,47 @@
       <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – scrollbare Auswahl</div>
       <div class="lesson-box">
         <label class="chip"><input type="checkbox" id="lesson_all" checked> Alle</label>
-        <div id="lessonFilters" class="lesson-list"><!-- erzeugt per JS --></div>
+        <div id="lessonFilters" class="lesson-list"></div>
       </div>
       <div class="filter-actions">
         <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
-        <span class="hint">(shuffle, nächste Karte, Zähler)</span>
+        <span class="hint">(Einzelkarten-Ansicht mit Aufdecken & Zählern)</span>
       </div>
     </section>
 
-    <section id="listView">
-      <div id="count"></div>
-      <div class="grid" id="grid"></div>
-      <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
-    </section>
-
+    <!-- EINZELKARTEN-ANSICHT -->
     <section id="studyView" style="display:none;">
       <div class="study-bar">
-        <button class="btn" id="exitStudy">Zurück zur Liste</button>
-        <button class="btn" id="reshuffle">Shuffle neu</button>
         <div class="counter" id="counter">0 / 0</div>
+        <div class="muted small" id="progressInfo"></div>
       </div>
-      <div class="study-card" id="studyCard">
+
+      <!-- Oberes Feld: Frage (sichtbar) -->
+      <div class="panel" id="questionPanel">
         <div class="id" id="studyId"></div>
-        <div class="lines" id="studyLines"></div>
-        <div class="actions">
-          <button class="btn" id="flipOne">Umdrehen</button>
-          <button class="btn" id="nextOne">Nächste Karte</button>
-        </div>
+        <div class="lines" id="questionLines"></div>
       </div>
+
+      <!-- Unteres Feld: Antwort (leer bis Aufdecken) -->
+      <div class="panel answer" id="answerPanel">
+        <div class="lines" id="answerLines"></div>
+      </div>
+
+      <div class="actions trio" id="navActions">
+        <button class="btn" id="prevOne">Zurück</button>
+        <button class="btn primary" id="revealOne">Aufdecken</button>
+        <button class="btn" id="nextOne">Nächste Karte</button>
+      </div>
+
+      <div class="actions result" id="resultActions" style="display:none;">
+        <button class="btn success" id="knewIt">Gewusst</button>
+        <button class="btn danger" id="notKnew">Nicht gewusst</button>
+      </div>
+
+      <div class="muted small" id="hintReveal">Tipp: Du siehst oben die abgefragte Vokabel. Nach dem Aufdecken erscheint die Lösung unten, die Vokabel oben bleibt sichtbar.</div>
     </section>
+
+    <!-- (Die alte Listenansicht wird nicht mehr verwendet und entfernt) -->
   </main>
 
   <script src="app.js"></script>

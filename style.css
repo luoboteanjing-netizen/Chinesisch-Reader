@@ -22,7 +22,7 @@ h1{ font-size:18px; margin:0; }
 .study-bar{ display:flex; align-items:center; gap:8px; justify-content:space-between; margin-bottom:12px; }
 .counter{ color:#c7c7c7; }
 .panel{ background:var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height:120px; display:flex; flex-direction:column; gap:8px; }
-.panel.answer{ margin-top:12px; min-height:140px; }
+.panel.answer{ margin-top:12px; min-height:160px; }
 .lines{ line-height:1.5; }
 .line{ margin:2px 0; }
 .id{ color:var(--muted); font-size:12px; }
@@ -38,3 +38,6 @@ h1{ font-size:18px; margin:0; }
 .small{ font-size:12px; }
 .muted{ color:var(--muted); }
 mark{ background:#3a3f49; color:#fff; border-radius:4px; padding:0 2px; }
+
+/* Größerer Abstand zwischen Wort und Satz */
+.gap{ height: 14px; }

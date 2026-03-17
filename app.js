@@ -4,44 +4,37 @@ const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
 
 // ---------- Utils ----------
 function detectDelimiter(sample){
-  const first = (sample.split(/\r?\n/)[0] || '');
+  const first = (sample.split(/?
+/)[0] || '');
   const countSplit = (line, delim) => (line.length ? line.split(delim).length - 1 : 0);
-  const candidates = [ {d:',',n:countSplit(first,',')}, {d:';',n:countSplit(first,';')}, {d:'\t',n:countSplit(first,'\t')}, {d:'|',n:countSplit(first,'|')} ];
+  const candidates = [ {d:',',n:countSplit(first,',')}, {d:';',n:countSplit(first,';')}, {d:'	',n:countSplit(first,'	')}, {d:'|',n:countSplit(first,'|')} ];
   candidates.sort((a,b)=>b.n-a.n);
   return candidates[0].n>0 ? candidates[0].d : ';';
 }
 function parseCSV(text){
   const delimiter = detectDelimiter(text);
-  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const lines = text.replace(/
+/g,'
+').replace(//g,'
+').split('
+');
   const rows=[];
   for(let li=0; li<lines.length; li++){
-    let line = lines[li];
-    if(!line.trim()){ rows.push([]); continue; }
+    let line=lines[li]; if(!line.trim()){ rows.push([]); continue; }
     const out=[]; let cur=''; let i=0; let inQ=false;
-    while(i<line.length){
-      const ch=line[i];
-      if(inQ){
-        if(ch==='"'){
-          if(i+1<line.length && line[i+1]==='"'){ cur+='"'; i+=2; }
-          else { inQ=false; i++; }
-        } else { cur+=ch; i++; }
-      } else {
-        if(ch==='"'){ inQ=true; i++; }
-        else {
-          const isDelim=(delimiter==='\t'? ch==='\t' : ch===delimiter);
-          if(isDelim){ out.push(cur); cur=''; i++; }
-          else { cur+=ch; i++; }
-        }
-      }
-    }
-    out.push(cur);
-    rows.push(out);
+    while(i<line.length){ const ch=line[i];
+      if(inQ){ if(ch==='"'){ if(i+1<line.length && line[i+1]==='"'){ cur+='"'; i+=2; } else { inQ=false; i++; } }
+               else { cur+=ch; i++; } }
+      else { if(ch==='"'){ inQ=true; i++; }
+             else { const isDelim=(delimiter==='	'? ch==='	' : ch===delimiter);
+                    if(isDelim){ out.push(cur); cur=''; i++; } else { cur+=ch; i++; } } }
+    out.push(cur); rows.push(out);
   }
   return { rows, delimiter };
 }
 async function loadCSV(){ const res=await fetch(CSV_PATH); if(!res.ok) throw new Error('CSV nicht gefunden: '+CSV_PATH); return await res.text(); }
 function isHeaderRow(cells){ const h=cells.join(' ').toLowerCase(); return /(deutsch|pinyin|wortart|hanzi|satz|id)/.test(h); }
-function stripToneMarks(s){ if(!s) return s; try{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch{ return s; } }
+function stripToneMarks(s){ if(!s) return s; try{ return s.normalize('NFD').replace(/[̀-ͯ]/g,''); }catch{ return s; } }
 function formatLesson(code){ const n=parseInt(String(code||'').replace(/\D/g,''),10); if(isNaN(n)) return String(code||''); return 'L'+String(n).padStart(2,'0'); }
 
 // ---------- Datenmodell ----------
@@ -49,7 +42,7 @@ function toCards(rows){
   const cards=[]; let start=0; if(rows.length && isHeaderRow(rows[0])) start=1;
   for(let i=start;i<rows.length;i++){
     const r=rows[i]||[]; const c=idx=> (r[idx]||'').trim();
-    if((c(0)||'').includes('*')) continue; // Skip
+    if((c(0)||'').includes('*')) continue;
     const de_word=c(0), py_word=c(1), pos=c(2), py_sent=c(3), de_sent=c(4), hz_word=c(5), hz_sent=c(6), id_raw=c(7);
     if(!(de_word||py_word||pos||py_sent||de_sent||hz_word||hz_sent)) continue;
     const id=id_raw || `row${i+1}`; const lesson=String(id).slice(0,3);
@@ -62,19 +55,22 @@ function toCards(rows){
 function buildLessonFilters(cards){
   const box=document.getElementById('lessonFilters'); box.innerHTML='';
   const lessons=Array.from(new Set(cards.map(c=>c.lesson))).filter(Boolean).sort();
-  lessons.forEach(lesson=>{ const id=`lesson_${lesson}`; const lbl=document.createElement('label'); lbl.className='chip'; lbl.innerHTML=`<input type=\"checkbox\" id=\"${id}\" data-lesson=\"${lesson}\" checked> Lektion ${formatLesson(lesson)}`; box.appendChild(lbl); });
+  lessons.forEach(lesson=>{ const id=`lesson_${lesson}`; const lbl=document.createElement('label'); lbl.className='chip'; lbl.innerHTML=`<input type="checkbox" id="${id}" data-lesson="${lesson}" checked> Lektion ${formatLesson(lesson)}`; box.appendChild(lbl); });
   const allCb=document.getElementById('lesson_all'); const cbs=lessons.map(l=>document.getElementById(`lesson_${l}`));
   function setAll(state){ allCb.checked=state; cbs.forEach(cb=>cb.checked=state); }
-  function refreshAll(){ allCb.checked=cbs.every(cb=>cb.checked); }
-  allCb.addEventListener('change', ()=> setAll(allCb.checked)); cbs.forEach(cb=> cb.addEventListener('change', refreshAll));
+  function refreshAll(){ allCb.checked = cbs.every(cb=>cb.checked); }
+  allCb.addEventListener('change', ()=> setAll(allCb.checked));
+  cbs.forEach(cb=> cb.addEventListener('change', refreshAll));
 }
-function getSelectedLessons(){ const nodes=document.querySelectorAll('#lessonFilters input[type=\"checkbox\"][data-lesson]'); const sel=[]; nodes.forEach(cb=>{ if(cb.checked) sel.push(cb.getAttribute('data-lesson')); }); return sel; }
+function getSelectedLessons(){ const nodes=document.querySelectorAll('#lessonFilters input[type="checkbox"][data-lesson]'); const sel=[]; nodes.forEach(cb=>{ if(cb.checked) sel.push(cb.getAttribute('data-lesson')); }); return sel; }
 
-// ---------- Einzelkarte: gesamte Seite als Frage, gesamte Gegenseite als Antwort ----------
-let study={ pool:[], idx:0, side:'zh' };
+// ---------- Einzelkarte mit Live-Suche ----------
+let study={ all:[], pool:[], idx:0, side:'zh' };
+
 function preparePool(allCards){
   const selectedLessons=getSelectedLessons();
-  const qRaw=document.getElementById('q').value.trim(); const qNorm=stripToneMarks(qRaw).toLowerCase();
+  const qRaw=document.getElementById('q').value.trim();
+  const qNorm=stripToneMarks(qRaw).toLowerCase();
   const restrict=selectedLessons.length>0;
   let pool=allCards.filter(c=>{
     if(restrict && !selectedLessons.includes(c.lesson)) return false;
@@ -84,62 +80,92 @@ function preparePool(allCards){
   });
   return pool;
 }
-function updateCounter(){ document.getElementById('counter').textContent = `${study.idx+1} / ${study.pool.length}`; }
+
+function refreshPool(keepCurrent=true){
+  if(!study.all.length) return;
+  const current = study.pool[study.idx];
+  const newPool = preparePool(study.all);
+  if(newPool.length===0){ study.pool=[]; study.idx=0; drawEmpty(); return; }
+  if(keepCurrent && current){
+    const pos = newPool.findIndex(x=> x.id===current.id);
+    study.pool = newPool;
+    study.idx = (pos>=0? pos : 0);
+  } else {
+    study.pool = newPool;
+    study.idx = 0;
+  }
+  // Nach Filteränderungen immer unrevealed rendern
+  drawCurrentCard(false);
+}
+
+function drawEmpty(){
+  document.getElementById('counter').textContent = '0 / 0';
+  document.getElementById('studyId').textContent = '';
+  document.getElementById('questionLines').innerHTML = '<div class="line muted">Keine Karten in der Auswahl.</div>';
+  document.getElementById('answerLines').innerHTML = '';
+  document.getElementById('revealOne').disabled = true;
+}
 
 function buildSideLines(card, side){
-  const posSpan = card.word.pos ? ` <span class=\"pos\">(${card.word.pos})</span>` : '';
   if(side==='zh'){
-    // Vollständige chinesische Seite: Wort Hanzi, Wort Pinyin, Leerzeile, Satz Hanzi, Satz Pinyin
+    // POS hinter Pinyin, nicht hinter Hanzi
+    const posAfterPy = card.word.pos ? ` <span class="pos">(${card.word.pos})</span>` : '';
     return [
-      (card.word.hanzi||'') + posSpan,
-      card.word.pinyin || '',
-      '',
+      (card.word.hanzi||''),
+      (card.word.pinyin||'') + posAfterPy,
+      '__GAP__',
       card.sentence.hanzi || '',
       card.sentence.pinyin || ''
-    ].filter((v,i)=> v!=='' || i===2); // Leerzeile (Index 2) beibehalten
+    ].filter(v=> v!=='' || v==='__GAP__');
   } else {
-    // Vollständige deutsche Seite: Wort Deutsch, Leerzeile, Satz Deutsch
     return [
-      (card.word.de||'') + (card.word.pos? ` <span class=\"pos\">(${card.word.pos})</span>`:''),
-      '',
+      (card.word.de||'') + (card.word.pos? ` <span class="pos">(${card.word.pos})</span>`:''),
+      '__GAP__',
       card.sentence.de || ''
-    ].filter((v,i)=> v!=='' || i===1);
+    ].filter(v=> v!=='' || v==='__GAP__');
   }
 }
 
-function drawCurrentCard(revealed=false){
-  const c=study.pool[study.idx]; if(!c) return;
+function renderLines(containerId, lines){
+  const box = document.getElementById(containerId);
+  box.innerHTML='';
+  lines.forEach((line,i)=>{
+    if(line==='__GAP__'){
+      const gap=document.createElement('div'); gap.className='gap'; box.appendChild(gap); return;
+    }
+    const div=document.createElement('div');
+    div.className='line'+(i===0?' wordline':'');
+    div.innerHTML=line;
+    box.appendChild(div);
+  });
+}
 
-  const questionSide = study.side;               // gewählte Seite
-  const answerSide   = (study.side==='zh'?'de':'zh'); // Gegenseite
+function drawCurrentCard(revealed=false){
+  const c=study.pool[study.idx]; if(!c){ drawEmpty(); return; }
+  const questionSide = study.side;               // 'zh' oder 'de'
+  const answerSide   = (study.side==='zh'?'de':'zh');
 
   const qLines = buildSideLines(c, questionSide);
   const aLines = buildSideLines(c, answerSide);
 
-  // Frage rendern (oben)
-  const qBox=document.getElementById('questionLines'); qBox.innerHTML='';
-  qLines.forEach((line,i)=>{ const div=document.createElement('div'); div.className='line'+(i===0?' wordline':''); div.innerHTML=line; qBox.appendChild(div); });
-
-  // Meta
+  renderLines('questionLines', qLines);
   document.getElementById('studyId').textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
-
-  // Antwort (unten)
-  const aBox=document.getElementById('answerLines'); aBox.innerHTML='';
-  if(revealed){ aLines.forEach(line=>{ const div=document.createElement('div'); div.className='line'; div.innerHTML=line; aBox.appendChild(div); }); }
-
+  document.getElementById('answerLines').innerHTML='';
+  if(revealed){ renderLines('answerLines', aLines); }
   document.getElementById('revealOne').disabled = revealed;
-  updateCounter();
+  document.getElementById('counter').textContent = `${study.idx+1} / ${study.pool.length}`;
 }
 
 function startStudy(cards){
-  const pool=preparePool(cards);
-  if(pool.length===0){ alert('Keine Karten in der Auswahl.'); return; }
-  study.pool=pool; study.idx=0; study.side=document.getElementById('side').value;
+  study.all = cards.slice();
+  study.side = document.getElementById('side').value;
+  study.pool = preparePool(study.all);
+  study.idx = 0;
   document.getElementById('studyView').style.display='block';
-  drawCurrentCard(false);
+  if(study.pool.length===0){ drawEmpty(); } else { drawCurrentCard(false); }
 }
-function prevCard(){ if(study.pool.length===0) return; study.idx=(study.idx-1+study.pool.length)%study.pool.length; drawCurrentCard(false); }
-function nextCard(){ if(study.pool.length===0) return; study.idx=(study.idx+1)%study.pool.length; drawCurrentCard(false); }
+function prevCard(){ if(!study.pool.length) return; study.idx=(study.idx-1+study.pool.length)%study.pool.length; drawCurrentCard(false); }
+function nextCard(){ if(!study.pool.length) return; study.idx=(study.idx+1)%study.pool.length; drawCurrentCard(false); }
 
 // ---------- App Start ----------
 (async function(){
@@ -149,15 +175,22 @@ function nextCard(){ if(study.pool.length===0) return; study.idx=(study.idx+1)%s
     const {rows, delimiter}=parseCSV(text);
     const cards=toCards(rows);
     const t1=performance.now();
-
-    document.getElementById('meta').textContent = `CSV geladen • Delimiter: \"${delimiter==='\t'?'TAB':delimiter}\" • Karten: ${cards.length} • ${Math.round(t1-t0)} ms`;
+    document.getElementById('meta').textContent = `CSV geladen • Delimiter: "${delimiter==='	'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1-t0)} ms`;
 
     buildLessonFilters(cards);
 
-    const sideSel=document.getElementById('side'); const q=document.getElementById('q');
-    sideSel.addEventListener('change', ()=> { study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false); });
-    q.addEventListener('input', ()=> {}); // kein Livefilter in der Einzelkartenansicht
-    document.getElementById('flipAll').addEventListener('click', ()=>{ sideSel.value=(sideSel.value==='zh'?'de':'zh'); study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false); });
+    const sideSel=document.getElementById('side');
+    const q=document.getElementById('q');
+
+    sideSel.addEventListener('change', ()=>{ study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false); });
+    q.addEventListener('input', ()=>{ if(study.all.length){ refreshPool(true); } });
+
+    document.getElementById('flipAll').addEventListener('click', ()=>{
+      sideSel.value=(sideSel.value==='zh'?'de':'zh'); study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false);
+    });
+
+    document.getElementById('lesson_all').addEventListener('change', ()=>{ if(study.all.length) refreshPool(true); });
+    document.getElementById('lessonFilters').addEventListener('change', ()=>{ if(study.all.length) refreshPool(true); });
 
     document.getElementById('startStudy').addEventListener('click', ()=> startStudy(cards));
     document.getElementById('prevOne').addEventListener('click', prevCard);
@@ -165,6 +198,6 @@ function nextCard(){ if(study.pool.length===0) return; study.idx=(study.idx+1)%s
     document.getElementById('revealOne').addEventListener('click', ()=> drawCurrentCard(true));
 
   }catch(err){
-    document.getElementById('meta').textContent='Fehler: '+err.message; console.error(err);
+    document.getElementById('meta').textContent = 'Fehler: ' + err.message; console.error(err);
   }
 })();

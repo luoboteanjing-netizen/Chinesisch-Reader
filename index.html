@@ -9,16 +9,15 @@
 <body>
   <header>
     <h1>Flashcards – Chinesisch/Deutsch</h1>
-    <div class="controls">
-      <select id="side">
+
+    <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
+    <div class="controls controls-block">
+      <select id="side" title="Vorderseite wählen">
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
       <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
-      <button class="btn" id="exportJson" title="Aktuelle Auswahl als JSON speichern">Export JSON</button>
-      <input type="file" id="importFile" accept="application/json" style="display:none" />
-      <button class="btn" id="importJson" title="JSON laden und anzeigen">Import JSON</button>
     </div>
   </header>
 

@@ -70,7 +70,7 @@ function buildLessonFilters(cards){
 }
 function getSelectedLessons(){ const nodes=document.querySelectorAll('#lessonFilters input[type=\"checkbox\"][data-lesson]'); const sel=[]; nodes.forEach(cb=>{ if(cb.checked) sel.push(cb.getAttribute('data-lesson')); }); return sel; }
 
-// ---------- Einzelkarte ----------
+// ---------- Einzelkarte: gesamte Seite als Frage, gesamte Gegenseite als Antwort ----------
 let study={ pool:[], idx:0, side:'zh' };
 function preparePool(allCards){
   const selectedLessons=getSelectedLessons();
@@ -86,29 +86,47 @@ function preparePool(allCards){
 }
 function updateCounter(){ document.getElementById('counter').textContent = `${study.idx+1} / ${study.pool.length}`; }
 
+function buildSideLines(card, side){
+  const posSpan = card.word.pos ? ` <span class=\"pos\">(${card.word.pos})</span>` : '';
+  if(side==='zh'){
+    // Vollständige chinesische Seite: Wort Hanzi, Wort Pinyin, Leerzeile, Satz Hanzi, Satz Pinyin
+    return [
+      (card.word.hanzi||'') + posSpan,
+      card.word.pinyin || '',
+      '',
+      card.sentence.hanzi || '',
+      card.sentence.pinyin || ''
+    ].filter((v,i)=> v!=='' || i===2); // Leerzeile (Index 2) beibehalten
+  } else {
+    // Vollständige deutsche Seite: Wort Deutsch, Leerzeile, Satz Deutsch
+    return [
+      (card.word.de||'') + (card.word.pos? ` <span class=\"pos\">(${card.word.pos})</span>`:''),
+      '',
+      card.sentence.de || ''
+    ].filter((v,i)=> v!=='' || i===1);
+  }
+}
+
 function drawCurrentCard(revealed=false){
   const c=study.pool[study.idx]; if(!c) return;
-  const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
-  let qLines=[], aLines=[];
-  if(study.side==='zh'){
-    // Frage: Hanzi, Pinyin
-    qLines = [ (c.word.hanzi||'') + posSpan, c.word.pinyin || '' ].filter(Boolean);
-    // Antwort: Leerzeile, Satz Hanzi, Satz Pinyin
-    aLines = [ '', c.sentence.hanzi || '', c.sentence.pinyin || '' ].filter((v,i)=> v!=='' || i===0);
-  } else {
-    // Frage: Wort Deutsch
-    qLines = [ (c.word.de||'') + (c.word.pos? ` <span class=\"pos\">(${c.word.pos})</span>`:'') ].filter(Boolean);
-    // Antwort: Leerzeile, Satz Deutsch
-    aLines = [ '', c.sentence.de || '' ].filter((v,i)=> v!=='' || i===0);
-  }
-  // Render Frage (oben)
+
+  const questionSide = study.side;               // gewählte Seite
+  const answerSide   = (study.side==='zh'?'de':'zh'); // Gegenseite
+
+  const qLines = buildSideLines(c, questionSide);
+  const aLines = buildSideLines(c, answerSide);
+
+  // Frage rendern (oben)
   const qBox=document.getElementById('questionLines'); qBox.innerHTML='';
   qLines.forEach((line,i)=>{ const div=document.createElement('div'); div.className='line'+(i===0?' wordline':''); div.innerHTML=line; qBox.appendChild(div); });
+
   // Meta
   document.getElementById('studyId').textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
-  // Render Antwort (unten)
+
+  // Antwort (unten)
   const aBox=document.getElementById('answerLines'); aBox.innerHTML='';
-  if(revealed){ aLines.forEach(line=>{ const div=document.createElement('div'); div.className='line'; div.textContent=line; aBox.appendChild(div); }); }
+  if(revealed){ aLines.forEach(line=>{ const div=document.createElement('div'); div.className='line'; div.innerHTML=line; aBox.appendChild(div); }); }
+
   document.getElementById('revealOne').disabled = revealed;
   updateCounter();
 }
@@ -138,7 +156,7 @@ function nextCard(){ if(study.pool.length===0) return; study.idx=(study.idx+1)%s
 
     const sideSel=document.getElementById('side'); const q=document.getElementById('q');
     sideSel.addEventListener('change', ()=> { study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false); });
-    q.addEventListener('input', ()=> {}); // kein Livefilter (Vermeidet Konflikte mit Anzeige)
+    q.addEventListener('input', ()=> {}); // kein Livefilter in der Einzelkartenansicht
     document.getElementById('flipAll').addEventListener('click', ()=>{ sideSel.value=(sideSel.value==='zh'?'de':'zh'); study.side=sideSel.value; if(study.pool.length) drawCurrentCard(false); });
 
     document.getElementById('startStudy').addEventListener('click', ()=> startStudy(cards));

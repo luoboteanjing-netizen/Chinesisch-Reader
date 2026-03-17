@@ -31,7 +31,7 @@ h1{ font-size:18px; margin:0; }
 .btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:10px 14px; cursor:pointer; }
 .btn.primary{ background:var(--primary); border-color:#3a4a6a; }
 
-/* Wortart 2px kleiner und hellgrau */
+/* POS 2px kleiner */
 .pos{ color:var(--muted); font-style:normal; font-size:calc(1em - 2px); }
 .wordline{ font-size:18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }

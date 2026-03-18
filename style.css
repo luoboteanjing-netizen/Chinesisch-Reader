@@ -16,7 +16,7 @@ h1{ font-size:18px; margin:0; }
 .controls select,
 .controls input[type="text"],  /* Speziell für das Suchfeld #q */
 #count {  /* Zähler unter den Controls */
-  font-size: 14px;  /* Passe hier an, falls du eine andere Größe meinst (z.B. 14px für Body-Default) */
+  font-size: 16px;  /* Passe hier an, falls du eine andere Größe meinst (z.B. 14px für Body-Default) */
 }
 .controls .btn{ cursor:pointer; }
 /* Neu: Controls unter dem Titel, mobilfreundlich */

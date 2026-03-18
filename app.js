@@ -130,7 +130,15 @@ function toCards(rows){
 function buildLessonFilters(cards){
   const box = document.getElementById('lessonFilters');
   box.innerHTML = '';
-  const lessons = Array.from(new Set(cards.map(c => c.lesson))).filter(Boolean).sort();
+  // Lektionen in der Reihenfolge ihres ersten Auftretens in der CSV sammeln (natürliche Reihenfolge)
+  const lessons = [];
+  const seen = new Set();
+  cards.forEach(c => {
+    if (c.lesson && !seen.has(c.lesson)) {
+      seen.add(c.lesson);
+      lessons.push(c.lesson);
+    }
+  });
   lessons.forEach(lesson => {
     const id = `lesson_${lesson.replace(/\s+/g, '_')}`; // ID sicher machen, Leerzeichen ersetzen
     const lbl = document.createElement('label');

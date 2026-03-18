@@ -108,12 +108,13 @@ function toCards(rows){
     const de_sent = c(4);
     const hz_word = c(5);
     const hz_sent = c(6);
-    const lesson_raw  = c(7); // Spalte H als Lektionsname
+    const id_raw  = c(7); // ID aus Spalte H
+    const lesson_raw = c(8); // Lektionsname aus Spalte I
 
     if (!(de_word || py_word || pos || py_sent || de_sent || hz_word || hz_sent)) continue;
 
-    const id = lesson_raw || `row${i+1}`; // ID kann weiterhin aus Spalte H kommen, oder Fallback
-    const lesson = lesson_raw || `Lektion ${i - start + 1}`; // Lektionsname direkt aus Spalte H, oder Fallback
+    const id = id_raw || `row${i+1}`;
+    const lesson = lesson_raw || `Lektion ${i - start + 1}`; // Lektionsname direkt aus Spalte I, oder Fallback
 
     // Lines werden beim Rendern zusammengesetzt (damit POS direkt am Wort hängt)
     cards.push({

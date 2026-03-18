@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flashcards – Chinesisch/Deutsch</title>
+  <title>Flashcards – Suchansicht (ZH/DE-seitig)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>Flashcards – Chinesisch/Deutsch</h1>
-
-    <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
+    <h1>Flashcards – Suche (seitenbezogen)</h1>
     <div class="controls controls-block">
-      <select id="side" title="Vorderseite wählen">
+      <select id="side" title="Welche Seite wird durchsucht & angezeigt">
         <option value="zh">Seite: Chinesisch</option>
         <option value="de">Seite: Deutsch</option>
       </select>
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
-      <button class="btn" id="flipAll" title="Alle Karten umdrehen">Alle umdrehen</button>
+      <button class="btn" id="clear">Suche löschen</button>
     </div>
   </header>
 
@@ -25,38 +23,16 @@
     <div id="meta" class="muted small"></div>
 
     <section class="filters">
-      <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – scrollbare Auswahl</div>
+      <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – Auswahl wirkt auf die Suche</div>
       <div class="lesson-box">
         <label class="chip"><input type="checkbox" id="lesson_all" checked> Alle</label>
-        <div id="lessonFilters" class="lesson-list"><!-- erzeugt per JS --></div>
-      </div>
-      <div class="filter-actions">
-        <button class="btn" id="startStudy">Nur diese Auswahl lernen</button>
-        <span class="hint">(shuffle, nächste Karte, Zähler)</span>
+        <div id="lessonFilters" class="lesson-list"></div>
       </div>
     </section>
 
-    <section id="listView">
-      <div id="count"></div>
-      <div class="grid" id="grid"></div>
-      <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
-    </section>
-
-    <section id="studyView" style="display:none;">
-      <div class="study-bar">
-        <button class="btn" id="exitStudy">Zurück zur Liste</button>
-        <button class="btn" id="reshuffle">Shuffle neu</button>
-        <div class="counter" id="counter">0 / 0</div>
-      </div>
-      <div class="study-card" id="studyCard">
-        <div class="id" id="studyId"></div>
-        <div class="lines" id="studyLines"></div>
-        <div class="actions">
-          <button class="btn" id="flipOne">Umdrehen</button>
-          <button class="btn" id="nextOne">Nächste Karte</button>
-        </div>
-      </div>
-    </section>
+    <div id="count"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none;">Keine Karten gefunden.</div>
   </main>
 
   <script src="app.js"></script>

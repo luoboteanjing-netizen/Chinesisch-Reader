@@ -17,7 +17,7 @@ function detectDelimiter(sample){
 
 function parseCSV(text){
   const delimiter = detectDelimiter(text);
-  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const lines = text.replace(/\r?\n/g,'\n').replace(/\r/g,'\n').split('\n');
   const rows = [];
   for (let li=0; li<lines.length; li++){
     let line = lines[li];
@@ -196,9 +196,9 @@ function render(cards){
     function makeLines(){
       const posSpan = c.word.pos ? `<span class="pos">(${c.word.pos})</span>` : '';
       if(current==='zh'){
-        // Chinesisch: Hanzi (erste Line), Pinyin + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
+        // Chinesisch: Hanzi (erste Line), Pinyin + 3 Leerzeichen + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
         const l1 = c.word.hanzi || '';
-        const l2 = (c.word.pinyin || '') + posSpan;
+        const l2 = (c.word.pinyin || '') + (c.word.pos ? '   ' + posSpan : '');
         const l3 = c.sentence.hanzi || '';
         const l4 = c.sentence.pinyin || '';
         return [l1, l2, l3, l4].filter(Boolean);
@@ -289,9 +289,9 @@ function drawStudy(){
   const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
   let lines;
   if(study.side==='zh'){
-    // Chinesisch: Hanzi (erste Line), Pinyin + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
+    // Chinesisch: Hanzi (erste Line), Pinyin + 3 Leerzeichen + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
     const l1 = c.word.hanzi || '';
-    const l2 = (c.word.pinyin || '') + posSpan;
+    const l2 = (c.word.pinyin || '') + (c.word.pos ? '   ' + posSpan : '');
     const l3 = c.sentence.hanzi || '';
     const l4 = c.sentence.pinyin || '';
     lines = [l1, l2, l3, l4].filter(Boolean);

@@ -188,7 +188,7 @@ function render(cards){
 
     const idDiv = document.createElement('div');
     idDiv.className = 'id';
-    idDiv.textContent = `ID: ${c.id}  •  Lektion: ${c.lesson}`;
+    idDiv.textContent = `ID: ${c.id}`;
 
     const linesDiv = document.createElement('div');
     linesDiv.className = 'lines';
@@ -273,7 +273,7 @@ function exitStudy(){
 function drawStudy(){
   const c = study.queue[study.idx];
   const idEl = document.getElementById('studyId');
-  idEl.textContent = `ID: ${c.id}  •  Lektion: ${c.lesson}`;
+  idEl.textContent = `ID: ${c.id}`;
   const linesEl = document.getElementById('studyLines');
   linesEl.innerHTML='';
 

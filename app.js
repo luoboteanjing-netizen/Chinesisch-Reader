@@ -194,25 +194,34 @@ function render(cards){
     linesDiv.className = 'lines';
 
     function makeLines(){
-      const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
+      const posSpan = c.word.pos ? `<span class="pos">(${c.word.pos})</span>` : '';
       if(current==='zh'){
-        const l1 = (c.word.hanzi||'') + posSpan;
-        const l2 = c.word.pinyin||'';
-        const l3 = c.sentence.hanzi||'';
-        const l4 = c.sentence.pinyin||'';
-        return [l1,l2,l3,l4].filter(Boolean);
+        // Chinesisch: Hanzi (erste Line), Pinyin + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
+        const l1 = c.word.hanzi || '';
+        const l2 = (c.word.pinyin || '') + posSpan;
+        const l3 = c.sentence.hanzi || '';
+        const l4 = c.sentence.pinyin || '';
+        return [l1, l2, l3, l4].filter(Boolean);
       } else {
-        const l1 = (c.word.de||'') + (c.word.pos? ` <span class="pos">(${c.word.pos})</span>`:'');
-        const l2 = c.sentence.de||'';
-        return [l1,l2].filter(Boolean);
+        // Deutsch: Wort (erste Line), POS (separate zweite Line), Satz (dritte Line)
+        const l1 = c.word.de || '';
+        const l2 = posSpan;
+        const l3 = c.sentence.de || '';
+        return [l1, l2, l3].filter(Boolean);
       }
     }
 
     function draw(){
       linesDiv.innerHTML = '';
-      makeLines().forEach(line => {
+      const lines = makeLines();
+      lines.forEach((line, idx) => {
         const div = document.createElement('div');
-        div.className = 'line';
+        let className = 'line';
+        if (idx === 0) {
+          className += ' wordline';
+          if (current === 'zh') className += ' zh';
+        }
+        div.className = className;
         div.innerHTML = highlightToneInsensitive(line, qRaw);
         linesDiv.appendChild(div);
       });
@@ -280,19 +289,24 @@ function drawStudy(){
   const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
   let lines;
   if(study.side==='zh'){
-    const l1 = (c.word.hanzi||'') + posSpan;
-    const l2 = c.word.pinyin||'';
-    const l3 = c.sentence.hanzi||'';
-    const l4 = c.sentence.pinyin||'';
-    lines = [l1,l2,l3,l4].filter(Boolean);
+    // Chinesisch: Hanzi (erste Line), Pinyin + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
+    const l1 = c.word.hanzi || '';
+    const l2 = (c.word.pinyin || '') + posSpan;
+    const l3 = c.sentence.hanzi || '';
+    const l4 = c.sentence.pinyin || '';
+    lines = [l1, l2, l3, l4].filter(Boolean);
   } else {
-    const l1 = (c.word.de||'') + (c.word.pos? ` <span class=\"pos\">(${c.word.pos})</span>`:'');
-    const l2 = c.sentence.de||'';
-    lines = [l1,l2].filter(Boolean);
+    // Deutsch: Wort (erste Line), POS (separate zweite Line), Satz (dritte Line)
+    const l1 = c.word.de || '';
+    const l2 = posSpan;
+    const l3 = c.sentence.de || '';
+    lines = [l1, l2, l3].filter(Boolean);
   }
   lines.forEach((line, i)=>{
     const div=document.createElement('div');
-    div.className = 'line' + (i===0? ' wordline':'' ) + (study.side==='zh' && i===0? ' zh':'' );
+    let className = 'line' + (i===0? ' wordline':'' );
+    if (study.side === 'zh' && i === 0) className += ' zh';
+    div.className = className;
     div.innerHTML = line;
     linesEl.appendChild(div);
   });

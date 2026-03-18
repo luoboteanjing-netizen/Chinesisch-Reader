@@ -1,4 +1,3 @@
-
 // --- Konfiguration ---
 const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
 
@@ -89,12 +88,6 @@ function highlightToneInsensitive(originalText, query){
   );
 }
 
-function formatLesson(code){
-  const n = parseInt(String(code||'').replace(/\D/g,''),10);
-  if(isNaN(n)) return String(code||'');
-  return 'L' + String(n).padStart(2,'0');
-}
-
 // ---------- Datenaufbereitung ----------
 function toCards(rows){
   const cards = [];
@@ -115,12 +108,12 @@ function toCards(rows){
     const de_sent = c(4);
     const hz_word = c(5);
     const hz_sent = c(6);
-    const id_raw  = c(7);
+    const lesson_raw  = c(7); // Spalte H als Lektionsname
 
     if (!(de_word || py_word || pos || py_sent || de_sent || hz_word || hz_sent)) continue;
 
-    const id = id_raw || `row${i+1}`;
-    const lesson = String(id).slice(0, 4);
+    const id = lesson_raw || `row${i+1}`; // ID kann weiterhin aus Spalte H kommen, oder Fallback
+    const lesson = lesson_raw || `Lektion ${i - start + 1}`; // Lektionsname direkt aus Spalte H, oder Fallback
 
     // Lines werden beim Rendern zusammengesetzt (damit POS direkt am Wort hängt)
     cards.push({
@@ -138,14 +131,14 @@ function buildLessonFilters(cards){
   box.innerHTML = '';
   const lessons = Array.from(new Set(cards.map(c => c.lesson))).filter(Boolean).sort();
   lessons.forEach(lesson => {
-    const id = `lesson_${lesson}`;
+    const id = `lesson_${lesson.replace(/\s+/g, '_')}`; // ID sicher machen, Leerzeichen ersetzen
     const lbl = document.createElement('label');
     lbl.className = 'chip';
-    lbl.innerHTML = `<input type="checkbox" id="${id}" data-lesson="${lesson}" checked> Lektion ${formatLesson(lesson)}`;
+    lbl.innerHTML = `<input type="checkbox" id="${id}" data-lesson="${lesson}" checked> Lektion ${lesson}`;
     box.appendChild(lbl);
   });
   const allCb = document.getElementById('lesson_all');
-  const cbs = lessons.map(l => document.getElementById(`lesson_${l}`));
+  const cbs = lessons.map(l => document.getElementById(`lesson_${l.replace(/\s+/g, '_')}`));
   function setAll(state){ allCb.checked = state; cbs.forEach(cb => cb.checked = state); }
   function refreshAll(){ allCb.checked = cbs.every(cb => cb.checked); }
   allCb.addEventListener('change', () => setAll(allCb.checked));
@@ -194,7 +187,7 @@ function render(cards){
 
     const idDiv = document.createElement('div');
     idDiv.className = 'id';
-    idDiv.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
+    idDiv.textContent = `ID: ${c.id}  •  Lektion: ${c.lesson}`;
 
     const linesDiv = document.createElement('div');
     linesDiv.className = 'lines';
@@ -279,7 +272,7 @@ function exitStudy(){
 function drawStudy(){
   const c = study.queue[study.idx];
   const idEl = document.getElementById('studyId');
-  idEl.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
+  idEl.textContent = `ID: ${c.id}  •  Lektion: ${c.lesson}`;
   const linesEl = document.getElementById('studyLines');
   linesEl.innerHTML='';
 

@@ -17,7 +17,7 @@ function detectDelimiter(sample){
 
 function parseCSV(text){
   const delimiter = detectDelimiter(text);
-  const lines = text.replace(/\r?\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
   const rows = [];
   for (let li=0; li<lines.length; li++){
     let line = lines[li];
@@ -153,6 +153,16 @@ function getSelectedLessons(){
   return selected;
 }
 
+function getSearchHaystack(card, side){
+  const fields = [card.word.pos].filter(Boolean);
+  if (side === 'zh') {
+    fields.push(card.word.hanzi, card.word.pinyin, card.sentence.hanzi, card.sentence.pinyin);
+  } else {
+    fields.push(card.word.de, card.sentence.de);
+  }
+  return fields.filter(Boolean).join(' ');
+}
+
 function render(cards){
   const grid = document.getElementById('grid');
   const empty = document.getElementById('empty');
@@ -162,11 +172,12 @@ function render(cards){
   const qNorm = stripToneMarks(qRaw).toLowerCase();
   const selectedLessons = getSelectedLessons();
   const restrictByLesson = selectedLessons.length > 0;
+  const currentSide = sideSel.value;
 
   const filtered = cards.filter(c => {
     if (restrictByLesson && !selectedLessons.includes(c.lesson)) return false;
     if (!qNorm) return true;
-    const hay = [c.word.hanzi, c.word.pinyin, c.word.de, c.word.pos, c.sentence.hanzi, c.sentence.pinyin, c.sentence.de].filter(Boolean).join(' ');
+    const hay = getSearchHaystack(c, currentSide);
     return stripToneMarks(hay).toLowerCase().includes(qNorm);
   });
 
@@ -259,16 +270,17 @@ function enterStudy(cards){
   const qRaw = document.getElementById('q').value.trim();
   const qNorm = stripToneMarks(qRaw).toLowerCase();
   const restrict = selectedLessons.length>0;
+  const currentSide = document.getElementById('side').value;
   let pool = cards.filter(c=>{
     if(restrict && !selectedLessons.includes(c.lesson)) return false;
     if(!qNorm) return true;
-    const hay=[c.word.hanzi,c.word.pinyin,c.word.de,c.word.pos,c.sentence.hanzi,c.sentence.pinyin,c.sentence.de].filter(Boolean).join(' ');
+    const hay = getSearchHaystack(c, currentSide);
     return stripToneMarks(hay).toLowerCase().includes(qNorm);
   });
   pool = shuffleArray(pool.slice());
   if(pool.length===0){ alert('Keine Karten in der Auswahl.'); return; }
 
-  study.queue = pool; study.idx = 0; study.side = document.getElementById('side').value;
+  study.queue = pool; study.idx = 0; study.side = currentSide;
   document.getElementById('listView').style.display='none';
   document.getElementById('studyView').style.display='block';
   drawStudy();

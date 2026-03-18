@@ -120,7 +120,7 @@ function toCards(rows){
     if (!(de_word || py_word || pos || py_sent || de_sent || hz_word || hz_sent)) continue;
 
     const id = id_raw || `row${i+1}`;
-    const lesson = String(id).slice(0, 3);
+    const lesson = String(id).slice(0, 4);
 
     // Lines werden beim Rendern zusammengesetzt (damit POS direkt am Wort hängt)
     cards.push({

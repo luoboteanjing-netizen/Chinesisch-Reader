@@ -20,8 +20,7 @@ function parseCSV(text){
   const delimiter = detectDelimiter(text);
   const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
   const rows = [];
-  for (let li=0; li<li
-es.length; li++){
+  for (let li=0; li<lines.length; li++){
     let line = lines[li];
     if (!line.trim()) { rows.push([]); continue; }
     const out = [];
@@ -105,6 +104,7 @@ function toCards(rows){
     const r = rows[i] || [];
     const c = (idx)=> (r[idx]||'').trim();
 
+    // Skip-Markierung: erste Zelle enthält '*'
     const firstCell = c(0);
     if (firstCell.includes('*')) continue;
 
@@ -122,6 +122,7 @@ function toCards(rows){
     const id = id_raw || `row${i+1}`;
     const lesson = String(id).slice(0, 3);
 
+    // Lines werden beim Rendern zusammengesetzt (damit POS direkt am Wort hängt)
     cards.push({
       id, lesson,
       word: { de: de_word, pinyin: py_word, hanzi: hz_word, pos },
@@ -131,7 +132,7 @@ function toCards(rows){
   return cards;
 }
 
-// ---------- UI ----------
+// ---------- UI Listenansicht ----------
 function buildLessonFilters(cards){
   const box = document.getElementById('lessonFilters');
   box.innerHTML = '';
@@ -163,26 +164,16 @@ function render(cards){
   const empty = document.getElementById('empty');
   const sideSel = document.getElementById('side');
   const qRaw = document.getElementById('q').value.trim();
-  const qNorm = stripToneMarks(qRaw).toLowerCase();
 
+  const qNorm = stripToneMarks(qRaw).toLowerCase();
   const selectedLessons = getSelectedLessons();
   const restrictByLesson = selectedLessons.length > 0;
 
   const filtered = cards.filter(c => {
     if (restrictByLesson && !selectedLessons.includes(c.lesson)) return false;
-    if (!qNorm) return true; // wenn leer, alle zeigen (innerhalb Lektionen)
-
-    if (sideSel.value === 'zh'){
-      // NUR chinesische Seite durchsuchen
-      const hayZh = [c.word.hanzi, c.word.pinyin, c.word.pos, c.sentence.hanzi, c.sentence.pinyin]
-        .filter(Boolean).join(' ');
-      return stripToneMarks(hayZh).toLowerCase().includes(qNorm);
-    } else {
-      // NUR deutsche Seite durchsuchen
-      const hayDe = [c.word.de, c.word.pos, c.sentence.de]
-        .filter(Boolean).join(' ');
-      return stripToneMarks(hayDe).toLowerCase().includes(qNorm);
-    }
+    if (!qNorm) return true;
+    const hay = [c.word.hanzi, c.word.pinyin, c.word.de, c.word.pos, c.sentence.hanzi, c.sentence.pinyin, c.sentence.de].filter(Boolean).join(' ');
+    return stripToneMarks(hay).toLowerCase().includes(qNorm);
   });
 
   document.getElementById('count').textContent = `${filtered.length} Karten`;
@@ -199,37 +190,125 @@ function render(cards){
     const el = document.createElement('div');
     el.className = 'card';
 
+    let current = sideSel.value; // 'zh' oder 'de'
+
     const idDiv = document.createElement('div');
     idDiv.className = 'id';
-    idDiv.textContent = `ID: ${c.id}  •  Lektion: ${c.lesson}`;
+    idDiv.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
 
     const linesDiv = document.createElement('div');
     linesDiv.className = 'lines';
 
-    function linesForSide(){
-      if (sideSel.value === 'zh'){
-        // Karte in chinesischer Darstellung
-        return [ c.word.hanzi, c.word.pinyin, c.word.pos, c.sentence.hanzi, c.sentence.pinyin ]
-          .filter(Boolean);
+    function makeLines(){
+      const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
+      if(current==='zh'){
+        const l1 = (c.word.hanzi||'') + posSpan;
+        const l2 = c.word.pinyin||'';
+        const l3 = c.sentence.hanzi||'';
+        const l4 = c.sentence.pinyin||'';
+        return [l1,l2,l3,l4].filter(Boolean);
       } else {
-        return [ c.word.de, c.word.pos, c.sentence.de ]
-          .filter(Boolean);
+        const l1 = (c.word.de||'') + (c.word.pos? ` <span class="pos">(${c.word.pos})</span>`:'');
+        const l2 = c.sentence.de||'';
+        return [l1,l2].filter(Boolean);
       }
     }
 
-    const lines = linesForSide();
-    lines.forEach(line => {
-      const div = document.createElement('div');
-      div.className = 'line';
-      div.innerHTML = highlightToneInsensitive(line, qRaw);
-      linesDiv.appendChild(div);
-    });
+    function draw(){
+      linesDiv.innerHTML = '';
+      makeLines().forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line';
+        div.innerHTML = highlightToneInsensitive(line, qRaw);
+        linesDiv.appendChild(div);
+      });
+    }
+
+    draw();
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const flip = document.createElement('button');
+    flip.className = 'btn';
+    flip.textContent = 'Umdrehen';
+    flip.addEventListener('click', () => { current = (current === 'zh' ? 'de' : 'zh'); draw(); });
+
+    actions.appendChild(flip);
 
     el.appendChild(idDiv);
     el.appendChild(linesDiv);
+    el.appendChild(actions);
+
     grid.appendChild(el);
   });
 }
+
+// ---------- Lernmodus (einfach) ----------
+let study = { queue:[], idx:0, side:'zh' };
+
+function shuffleArray(a){
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function enterStudy(cards){
+  const selectedLessons = getSelectedLessons();
+  const qRaw = document.getElementById('q').value.trim();
+  const qNorm = stripToneMarks(qRaw).toLowerCase();
+  const restrict = selectedLessons.length>0;
+  let pool = cards.filter(c=>{
+    if(restrict && !selectedLessons.includes(c.lesson)) return false;
+    if(!qNorm) return true;
+    const hay=[c.word.hanzi,c.word.pinyin,c.word.de,c.word.pos,c.sentence.hanzi,c.sentence.pinyin,c.sentence.de].filter(Boolean).join(' ');
+    return stripToneMarks(hay).toLowerCase().includes(qNorm);
+  });
+  pool = shuffleArray(pool.slice());
+  if(pool.length===0){ alert('Keine Karten in der Auswahl.'); return; }
+
+  study.queue = pool; study.idx = 0; study.side = document.getElementById('side').value;
+  document.getElementById('listView').style.display='none';
+  document.getElementById('studyView').style.display='block';
+  drawStudy();
+}
+
+function exitStudy(){
+  document.getElementById('studyView').style.display='none';
+  document.getElementById('listView').style.display='block';
+}
+
+function drawStudy(){
+  const c = study.queue[study.idx];
+  const idEl = document.getElementById('studyId');
+  idEl.textContent = `ID: ${c.id}  •  Lektion: ${formatLesson(c.lesson)}`;
+  const linesEl = document.getElementById('studyLines');
+  linesEl.innerHTML='';
+
+  const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
+  let lines;
+  if(study.side==='zh'){
+    const l1 = (c.word.hanzi||'') + posSpan;
+    const l2 = c.word.pinyin||'';
+    const l3 = c.sentence.hanzi||'';
+    const l4 = c.sentence.pinyin||'';
+    lines = [l1,l2,l3,l4].filter(Boolean);
+  } else {
+    const l1 = (c.word.de||'') + (c.word.pos? ` <span class=\"pos\">(${c.word.pos})</span>`:'');
+    const l2 = c.sentence.de||'';
+    lines = [l1,l2].filter(Boolean);
+  }
+  lines.forEach((line, i)=>{
+    const div=document.createElement('div');
+    div.className = 'line' + (i===0? ' wordline':'' ) + (study.side==='zh' && i===0? ' zh':'' );
+    div.innerHTML = line;
+    linesEl.appendChild(div);
+  });
+
+  document.getElementById('counter').textContent = `${study.idx+1} / ${study.queue.length}`;
+}
+
+function nextStudy(){ if(study.queue.length===0) return; study.idx = (study.idx + 1) % study.queue.length; drawStudy(); }
+function flipStudy(){ study.side = (study.side==='zh' ? 'de' : 'zh'); drawStudy(); }
+function reshuffleStudy(){ if(study.queue.length<=1) return; const current = study.queue[study.idx]; shuffleArray(study.queue); const idx = study.queue.findIndex(x=>x.id===current.id); if(idx>0){ const [item]=study.queue.splice(idx,1); study.queue.unshift(item); study.idx=0; } drawStudy(); }
 
 // ---------- App Start ----------
 (async function(){
@@ -246,12 +325,23 @@ function render(cards){
     buildLessonFilters(cards);
     render(cards);
 
-    // Events: Live-Render bei Suche/Seite/Lektionen
-    document.getElementById('side').addEventListener('change', () => render(cards));
-    document.getElementById('q').addEventListener('input', () => render(cards));
-    document.getElementById('clear').addEventListener('click', ()=>{ document.getElementById('q').value=''; render(cards); });
+    // Events
+    const sideSel = document.getElementById('side');
+    const q = document.getElementById('q');
+    sideSel.addEventListener('change', () => render(cards));
+    q.addEventListener('input', () => render(cards));
+    document.getElementById('flipAll').addEventListener('click', () => {
+      sideSel.value = (sideSel.value === 'zh' ? 'de' : 'zh');
+      render(cards);
+    });
     document.getElementById('lesson_all').addEventListener('change', () => render(cards));
     document.getElementById('lessonFilters').addEventListener('change', () => render(cards));
+
+    document.getElementById('startStudy').addEventListener('click', () => enterStudy(cards));
+    document.getElementById('exitStudy').addEventListener('click', () => exitStudy());
+    document.getElementById('nextOne').addEventListener('click', () => nextStudy());
+    document.getElementById('flipOne').addEventListener('click', () => flipStudy());
+    document.getElementById('reshuffle').addEventListener('click', () => reshuffleStudy());
 
   } catch (err){
     document.getElementById('meta').textContent = 'Fehler: ' + err.message;

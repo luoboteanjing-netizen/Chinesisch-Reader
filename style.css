@@ -1,17 +1,40 @@
-:root{ --bg:#0b0c0f; --fg:#e7e7e7; --muted:#9aa0a6; --card:#16181d; --accent:#4cc2ff; --primary:#2b3a55; }
+:root{
+  --bg: #0b0c0f;
+  --fg: #e7e7e7;
+  --muted: #9aa0a6;
+  --card: #16181d;
+  --accent: #4cc2ff;
+}
 *{ box-sizing:border-box; }
 body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); }
-header{ display:block; padding:12px 16px; position:sticky; top:0; background:rgba(11,12,15,0.9); backdrop-filter: blur(6px); border-bottom:1px solid #222; z-index:10; }
+header{ display:block; padding: 12px 16px; position:sticky; top:0; background:rgba(11,12,15,0.9); backdrop-filter: blur(6px); border-bottom: 1px solid #222; z-index: 10; }
 h1{ font-size:18px; margin:0; }
-.container{ max-width:980px; margin:0 auto; padding:16px; }
-.controls{ display:flex; gap:8px; flex-wrap:wrap; }
+.container{ max-width: 980px; margin: 0 auto; padding:16px; }
+.controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
 .controls .btn{ cursor:pointer; }
+/* Neu: Controls unter dem Titel, mobilfreundlich */
 .controls-block{ width:100%; margin-top:10px; }
-@media (max-width: 600px){ .controls-block select, .controls-block input, .controls-block button{ flex:1 1 100%; } }
+@media (max-width: 600px){
+  .controls-block select,
+  .controls-block input,
+  .controls-block button{ flex:1 1 100%; }
+}
+.grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
+.card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
+.id{ color: var(--muted); font-size: 12px; }
+.lines{ margin:8px 0; line-height:1.5; }
+.line{ margin:2px 0; }
+.actions{ display:flex; gap:8px; }
+.btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; cursor:pointer; }
+.empty{ color: var(--muted); padding: 24px; text-align:center; }
+.small{ font-size: 12px; }
+.muted{ color: var(--muted); }
+mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 
+/* Lektionen */
+.filters{ display:flex; flex-direction:column; gap:10px; margin-bottom: 12px; }
 .legend{ font-size:12px; color:var(--muted); }
-.filters{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
 .lesson-box{ border:1px solid #2a2f39; border-radius:12px; background:#0e1116; padding:10px; }
 .lesson-list{ display:flex; gap:8px; flex-wrap:wrap; max-height:160px; overflow:auto; padding-top:6px; }
 .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #2a2f39; border-radius:16px; background:#0e1116; color:#e7e7e7; }
@@ -19,22 +42,12 @@ h1{ font-size:18px; margin:0; }
 .filter-actions{ display:flex; align-items:center; gap:8px; }
 .hint{ color:var(--muted); font-size:12px; }
 
-.study-bar{ display:flex; align-items:center; gap:8px; justify-content:space-between; margin-bottom:12px; }
-.counter{ color:#c7c7c7; }
-.panel{ background:var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height:120px; display:flex; flex-direction:column; gap:8px; }
-.panel.answer{ margin-top:12px; min-height:140px; }
-.lines{ line-height:1.5; }
-.line{ margin:2px 0; }
-.id{ color:var(--muted); font-size:12px; }
-.actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-.actions.trio{ justify-content:space-between; }
-.btn{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:10px 14px; cursor:pointer; }
-.btn.primary{ background:var(--primary); border-color:#3a4a6a; }
+/* Lernmodus */
+.study-bar{ display:flex; align-items:center; gap:8px; justify-content:flex-start; margin-bottom: 12px; }
+.counter{ margin-left:auto; color:var(--muted); }
+.study-card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 220px; display:flex; flex-direction:column; gap:12px; }
 
-/* POS 2px kleiner */
-.pos{ color:var(--muted); font-style:normal; font-size:calc(1em - 2px); }
-.wordline{ font-size:18px; }
+/* Wortart 2px kleiner und hellgrau */
+.pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
+.wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }
-.small{ font-size:12px; }
-.muted{ color:var(--muted); }
-mark{ background:#3a3f49; color:#fff; border-radius:4px; padding:0 2px; }

@@ -12,6 +12,12 @@ h1{ font-size:18px; margin:0; }
 .container{ max-width: 980px; margin: 0 auto; padding:16px; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
+/* Neue Regel: Schriftgröße für Select (Sprache), Input (Suche) und Zähler auf 12px setzen (wie Lektionen-Liste/Small) */
+.controls select,
+.controls input[type="text"],  /* Speziell für das Suchfeld #q */
+#count {  /* Zähler unter den Controls */
+  font-size: 12px;  /* Passe hier an, falls du eine andere Größe meinst (z.B. 14px für Body-Default) */
+}
 .controls .btn{ cursor:pointer; }
 /* Neu: Controls unter dem Titel, mobilfreundlich */
 .controls-block{ width:100%; margin-top:10px; }

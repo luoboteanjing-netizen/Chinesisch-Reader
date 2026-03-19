@@ -1,4 +1,4 @@
-// --- Konfiguration ---
+// R6--- Konfiguration ---
 const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
 
 // Globale Variablen für TTS

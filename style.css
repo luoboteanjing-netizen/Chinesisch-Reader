@@ -22,8 +22,8 @@ h1{ font-size:18px; margin:0; }
 .controls-block{ width:100%; margin-top:10px; }
 @media (max-width: 600px){
   .controls-block input,
-  .controls-block button,
-  .controls-block .language-switcher { flex:1 1 100%; margin-bottom:4px; }
+  .controls-block button { flex:1 1 100%; margin-bottom:4px; }
+  .controls-block .language-switcher { flex-wrap: nowrap; } /* Erzwingt nebeneinander */
 }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
@@ -84,7 +84,7 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   gap: 8px;
   align-items: center;
   flex: 1; /* Nimmt verfügbaren Platz ein, aber nicht mehr als nötig */
-  min-width: 200px; /* Mindestbreite für die drei Elemente */
+  min-width: 160px; /* Mindestbreite für die drei Elemente */
 }
 #languageSwitcher span {
   background: #0e1116;
@@ -96,25 +96,46 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   min-width: 80px;
   text-align: center;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 #languageSwitcher .switch-btn {
   background: #0e1116;
   color: var(--accent);
   border: 1px solid #2a2f39;
   border-radius: 8px;
-  padding: 8px 6px;
-  font-size: 14px;
-  min-width: 60px;
-  flex: 0 0 auto; /* Feste Breite, kein Grow */
+  padding: 8px;
+  font-size: 18px; /* Größer für Icon */
+  width: 32px; /* Feste, kompakte Breite (kürzer als Spans) */
+  min-width: unset;
+  height: 32px; /* Quadratisch */
+  flex: 0 0 32px; /* Kein Grow/Shrink */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.2s;
 }
 #languageSwitcher .switch-btn:hover {
   background: #2a2f39;
   color: #6cdbff;
 }
+/* Mobile: Nebeneinander halten, kompakter */
 @media (max-width: 600px) {
-  #languageSwitcher { flex-direction: column; gap: 4px; min-width: auto; }
-  #languageSwitcher span, #languageSwitcher .switch-btn { min-width: auto; flex: 1; }
+  #languageSwitcher { 
+    gap: 4px; /* Kleineres Gap für Mobile */
+    min-width: auto; /* Passt sich an */
+  }
+  #languageSwitcher span { 
+    min-width: 60px; /* Etwas kürzer für Mobile */
+    padding: 6px 8px; /* Weniger Padding */
+  }
+  #languageSwitcher .switch-btn { 
+    width: 28px; 
+    height: 28px; 
+    font-size: 16px; /* Kleineres Icon */
+    flex: 0 0 28px;
+  }
 }
 
 /* TTS Modal Styling */

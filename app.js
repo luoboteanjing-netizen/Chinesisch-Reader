@@ -295,11 +295,11 @@ function updateLanguageDisplay() {
   const sourceEl = document.getElementById('sourceLang');
   const targetEl = document.getElementById('targetLang');
   if (side === 'zh') {
-    sourceEl.textContent = 'Chinesisch';
-    targetEl.textContent = 'Deutsch';
+    sourceEl.innerHTML = '🇨🇳 Chinesisch';
+    targetEl.innerHTML = '🇩🇪 Deutsch';
   } else {
-    sourceEl.textContent = 'Deutsch';
-    targetEl.textContent = 'Chinesisch';
+    sourceEl.innerHTML = '🇩🇪 Deutsch';
+    targetEl.innerHTML = '🇨🇳 Chinesisch';
   }
 }
 
@@ -610,7 +610,7 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     buildLessonFilters(cards);
     render(cards);
 
-    // Initialisiere Language Display
+    // Initialisiere Language Display (mit Flags)
     updateLanguageDisplay();
 
     // Priming TTS beim Start (leises "Hallo" in initialer Sprache 'zh')

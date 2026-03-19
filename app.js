@@ -123,13 +123,15 @@ function getTTSSettings(lang) {
 }
 
 function saveTTSSettings(lang) {
-  const settings = getTTSSettings(lang); // Aktuelle Werte aus Modal
+  const voiceSelect = document.getElementById('voiceSelect');
+  const pitchSlider = document.getElementById('pitchSlider');
+  const rateSlider = document.getElementById('rateSlider');
   const voiceKey = `tts_voice_${lang}`;
   const pitchKey = `tts_pitch_${lang}`;
   const rateKey = `tts_rate_${lang}`;
-  localStorage.setItem(voiceKey, settings.voiceName);
-  localStorage.setItem(pitchKey, settings.pitch.toFixed(1));
-  localStorage.setItem(rateKey, settings.rate.toFixed(1));
+  localStorage.setItem(voiceKey, voiceSelect.value || '');
+  localStorage.setItem(pitchKey, pitchSlider.value);
+  localStorage.setItem(rateKey, rateSlider.value);
 }
 
 function updateTTSModal(lang) {
@@ -160,6 +162,28 @@ function showTTSSettings() {
   loadVoices(); // Sicherstellen, dass Stimmen geladen sind
   updateTTSModal(lang);
   document.getElementById('ttsModal').style.display = 'flex';
+}
+
+function testVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const lang = document.getElementById('side').value;
+  const testText = lang === 'zh' ? 'Nǐ hǎo' : 'Hallo';
+  speechSynthesis.cancel(); // Alte Speech stoppen
+  const utterance = new SpeechSynthesisUtterance(testText);
+  utterance.lang = lang === 'zh' ? 'zh-CN' : 'de-DE';
+  const voicesForLang = getVoicesForLang(lang);
+  const voiceSelect = document.getElementById('voiceSelect');
+  const pitchSlider = document.getElementById('pitchSlider');
+  const rateSlider = document.getElementById('rateSlider');
+  if (voiceSelect.value && voicesForLang.length > 0) {
+    const selectedVoice = voicesForLang.find(voice => voice.name === voiceSelect.value);
+    if (selectedVoice) utterance.voice = selectedVoice;
+  }
+  utterance.pitch = parseFloat(pitchSlider.value);
+  utterance.rate = parseFloat(rateSlider.value);
+  utterance.volume = 0.5; // Mittelstark für Test
+  speechSynthesis.speak(utterance);
+  // console.log('Testing voice with:', testText, 'pitch:', utterance.pitch, 'rate:', utterance.rate); // Debug
 }
 
 function speak(text, lang, volume = 1.0) {
@@ -552,15 +576,9 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     document.getElementById('closeTTSModal').addEventListener('click', () => {
       document.getElementById('ttsModal').style.display = 'none';
     });
+    document.getElementById('testVoiceBtn').addEventListener('click', testVoice);
     document.getElementById('saveTTSSettings').addEventListener('click', () => {
       const lang = document.getElementById('side').value;
-      // Aktualisiere Settings aus Modal
-      const voiceSelect = document.getElementById('voiceSelect');
-      const pitchSlider = document.getElementById('pitchSlider');
-      const rateSlider = document.getElementById('rateSlider');
-      getTTSSettings(lang).voiceName = voiceSelect.value;
-      getTTSSettings(lang).pitch = parseFloat(pitchSlider.value);
-      getTTSSettings(lang).rate = parseFloat(rateSlider.value);
       saveTTSSettings(lang);
       document.getElementById('ttsModal').style.display = 'none';
     });
@@ -583,10 +601,6 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
       }
     });
     q.addEventListener('input', () => render(cards));
-    document.getElementById('flipAll').addEventListener('click', () => {
-      sideSel.value = (sideSel.value === 'zh' ? 'de' : 'zh');
-      render(cards);
-    });
     document.getElementById('lesson_all').addEventListener('change', () => render(cards));
     document.getElementById('lessonFilters').addEventListener('change', () => render(cards));
 

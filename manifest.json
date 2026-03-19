@@ -1,18 +1,19 @@
 {
-  "name": "Flashcards – Chinesisch/Deutsch",
-  "short_name": "Flashcards",
-  "description": "Lern-App für Chinesisch-Deutsch Vokabeln mit TTS und Lernmodus",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0b0c0f",
-  "theme_color": "#4cc2ff",
-  "orientation": "portrait-primary",
+  "name": "Chinesisch-Reader Flashcards",
+  "short_name": "Chinesisch-Reader",
+  "description": "Flashcards-App zum Lernen von Chinesisch (aus CSV: Long-Chinesisch_Lektionen). Mit Suche, TTS und Study-Modus. Offline-fähig als PWA.",
+  "start_url": "./",  // <-- Geändert: "./" statt "/" (relativ zum Subpfad /Chinesisch-Reader/)
+  "display": "standalone",  // Vollbild-Modus (wie native App)
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",  // Optional: Portrait für Mobile
+  "scope": "./",  // <-- Neu hinzugefügt: Expliziter Scope auf Subpfad (verhindert Root-404)
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any maskable"  // <-- Verbessert: Für Android/PC (maskable für runde Icons)
     },
     {
       "src": "icons/icon-512.png",

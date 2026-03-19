@@ -50,10 +50,15 @@ function parseCSV(text){
 }
 
 async function loadCSV(){
-  const res = await fetch(CSV_PATH);
-  if (!res.ok) throw new Error('CSV nicht gefunden: ' + CSV_PATH);
-  const text = await res.text();
-  return text;
+  try {
+    const res = await fetch(CSV_PATH);
+    if (!res.ok) throw new Error('CSV nicht gefunden: ' + CSV_PATH);
+    const text = await res.text();
+    return text;
+  } catch (err) {
+    // Offline-Fallback: Zeige Fehlermeldung, da Cache im SW gehandhabt wird
+    throw new Error('Offline: CSV konnte nicht geladen werden. Bitte online gehen für Setup.');
+  }
 }
 
 function isHeaderRow(cells){
@@ -594,6 +599,16 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
 
 // ---------- App Start ----------
 (async function(){
+  // PWA: Service Worker registrieren (nur wenn supported)
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('SW registered:', registration.scope); // Debug
+    } catch (err) {
+      console.log('SW registration failed:', err); // Fallback: App läuft trotzdem online
+    }
+  }
+
   // TTS Stimmen laden (asynchron)
   loadVoices();
 
@@ -605,7 +620,7 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     const t1 = performance.now();
 
     const meta = document.getElementById('meta');
-    meta.textContent = `CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms`;
+    meta.textContent = `CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms • PWA: Offline-fähig`;
 
     buildLessonFilters(cards);
     render(cards);
@@ -667,7 +682,10 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     });
 
   } catch (err){
-    document.getElementById('meta').textContent = 'Fehler: ' + err.message;
+    document.getElementById('meta').textContent = 'Fehler (möglicherweise offline): ' + err.message + '. Gehe online für Setup.';
     console.error(err);
+    // Zeige einfache Offline-Nachricht in UI
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '<div class="empty">Offline-Modus: App ist eingerichtet, aber lade online neu für Daten.</div>';
   }
 })();

@@ -5,11 +5,11 @@ let cards = [];
 let currentLang = 'de'; // Default: Deutsch
 let voices = {}; // Speichert Stimmen pro Sprache
 
-// TTS-Funktion (unverändert, aber primeTTS unten angepasst)
+// TTS-Funktion
 function speak(text, lang = currentLang) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  if (voices[lang]) {
+  if (voices[lang] && voices[lang].length > 0) {
     utterance.voice = voices[lang][0]; // Erste verfügbare Stimme
   }
   utterance.volume = 0.8;
@@ -17,63 +17,85 @@ function speak(text, lang = currentLang) {
   speechSynthesis.speak(utterance);
 }
 
-// Stimmen laden (unverändert)
+// Stimmen laden
 function loadVoices() {
-  speechSynthesis.onvoiceschanged = () => {
+  const onVoicesChanged = () => {
     voices = { de: [], zh: [] }; // Reset
     const allVoices = speechSynthesis.getVoices();
     allVoices.forEach(voice => {
       if (voice.lang.startsWith('de')) voices.de.push(voice);
-      if (voice.lang.startsWith('zh')) voices.zh.push(voice);
+      if (voice.lang.startsWith('zh-CN') || voice.lang.startsWith('zh')) voices.zh.push(voice);
     });
-    // Debug: Console.log nur, falls nötig
-    console.log('TTS Voices loaded:', voices);
+    console.log('TTS Voices loaded:', Object.keys(voices).map(lang => `${lang}: ${voices[lang].length}`));
   };
-  // Initial load triggern
-  speechSynthesis.getVoices();
+  
+  speechSynthesis.onvoiceschanged = onVoicesChanged;
+  // Initial load triggern (manchmal verzögert)
+  setTimeout(() => speechSynthesis.getVoices(), 100);
 }
 
-// Prime-TTS beim Start (GEÄNDERT: Neue Testtexte, leise)
+// Prime-TTS beim Start (mit gewünschten Testtexten, leise)
 function primeTTS(lang) {
   const testTexts = {
     de: 'Hallo, willkommen',
     zh: 'Ni hao, huanying'
   };
+  if (!testTexts[lang]) return;
+  
   const utterance = new SpeechSynthesisUtterance(testTexts[lang]);
   utterance.lang = lang;
-  if (voices[lang]) utterance.voice = voices[lang][0];
+  if (voices[lang] && voices[lang].length > 0) {
+    utterance.voice = voices[lang][0];
+  }
   utterance.volume = 0.3; // Leise für Test
   utterance.rate = 0.8;
   speechSynthesis.speak(utterance);
 }
 
-// CSV laden und parsen (unverändert)
+// CSV laden
 async function loadCSV() {
+  // FIX: Pfad anpassen, falls CSV in data/ ist
   const response = await fetch('./data/Long-Chinesisch_Lektionen.csv');
-  if (!response.ok) throw new Error('CSV nicht gefunden');
+  if (!response.ok) {
+    // Fallback: Versuche Root-Pfad (falls umgezogen)
+    const fallback = await fetch('./Long-Chinesisch_Lektionen.csv');
+    if (fallback.ok) return await fallback.text();
+    throw new Error('CSV nicht gefunden (überprüfe Pfad: data/ oder root)');
+  }
   return await response.text();
 }
 
+// CSV parsen
 function parseCSV(text) {
-  const lines = text.split('\n');
+  const lines = text.split('\n').filter(line => line.trim());
+  // Delimiter auto-detect (Komma oder TAB, aus deinem Log: ",")
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
-  const rows = lines.map(line => line.split(delimiter).map(cell => cell.trim()));
+  const rows = lines.map(line => 
+    line.split(delimiter).map(cell => cell.trim().replace(/"/g, '')) // Quotes entfernen
+  );
   return { rows, delimiter };
 }
 
+// Zu Karten konvertieren
 function toCards(rows) {
-  return rows.slice(1).map(row => ({
-    lesson: row[0],
-    pinyin: row[1],
-    german: row[2],
-    chinese: row[3]
-  })).filter(card => card.pinyin && card.german); // Ungültige filtern
+  return rows.slice(1) // Header skip
+    .map(row => ({
+      lesson: row[0] || 'Unbekannt',
+      pinyin: row[1] || '',
+      german: row[2] || '',
+      chinese: row[3] || ''
+    }))
+    .filter(card => card.pinyin && card.german && card.chinese) // Nur vollständige Karten
+    .sort((a, b) => a.lesson.localeCompare(b.lesson)); // Sortiert
 }
 
-// Filter bauen (unverändert)
+// Lektion-Filter bauen
 function buildLessonFilters(cards) {
   const lessons = [...new Set(cards.map(c => c.lesson))].sort();
   const select = document.getElementById('lessonSelect');
+  if (!select) return console.error('lessonSelect nicht gefunden');
+  
+  select.innerHTML = '<option value="all">Alle Lektionen</option>';
   lessons.forEach(lesson => {
     const option = document.createElement('option');
     option.value = lesson;
@@ -82,43 +104,73 @@ function buildLessonFilters(cards) {
   });
 }
 
-// Render Cards (unverändert, mit TTS-Button)
-function render(cards) {
+// Render Cards (FIX: Mit Checks gegen null/undefined)
+function render(cardsToShow) {
   const container = document.getElementById('cards');
-  container.innerHTML = '';
-  cards.forEach((card, index) => {
-    const cardEl = document.getElementById('card-template').cloneNode(true);
+  if (!container) {
+    console.error('Cards-Container (#cards) nicht gefunden!');
+    return;
+  }
+  
+  const template = document.getElementById('card-template');
+  if (!template) {
+    console.error('Template (#card-template) fehlt im HTML!');
+    container.innerHTML = '<p style="text-align: center; color: red;">Fehler: Karte-Template nicht geladen. Überprüfe index.html.</p>';
+    return;
+  }
+  
+  container.innerHTML = ''; // Alte Karten löschen (Template bleibt, da nicht geklont)
+  
+  if (cardsToShow.length === 0) {
+    container.innerHTML = '<p style="text-align: center; grid-column: 1 / -1;">Keine Karten gefunden. Versuche eine andere Suche oder Lektion.</p>';
+    return;
+  }
+  
+  cardsToShow.forEach((card, index) => {
+    const cardEl = template.cloneNode(true);
     cardEl.id = `card-${index}`;
-    cardEl.style.display = 'block';
+    cardEl.style.display = 'block'; // Sichtbar machen
+    
+    // Inhalte setzen
     cardEl.querySelector('.pinyin').textContent = card.pinyin;
     cardEl.querySelector('.german').textContent = card.german;
     cardEl.querySelector('.chinese').textContent = card.chinese;
     
     // TTS-Button
     const ttsBtn = cardEl.querySelector('.tts-btn');
-    ttsBtn.addEventListener('click', () => {
-      speak(card.chinese, 'zh'); // Chinesisch priorisieren
-    });
+    ttsBtn.addEventListener('click', () => speak(card.chinese, 'zh')); // Chinesisch für Chinese
     
     container.appendChild(cardEl);
   });
+  
+  console.log(`Gerendert: ${cardsToShow.length} Karten`);
 }
 
-// Events (unverändert)
-document.addEventListener('DOMContentLoaded', () => {
+// Events (nach DOM-Ready)
+function setupEvents() {
   const searchInput = document.getElementById('searchInput');
   const voiceSelect = document.getElementById('voiceSelect');
   const lessonSelect = document.getElementById('lessonSelect');
+  const studyBtn = document.getElementById('study-btn');
+
+  if (!searchInput || !voiceSelect || !lessonSelect || !studyBtn) {
+    console.error('Ein oder mehrere Elements nicht gefunden (IDs prüfen)');
+    return;
+  }
 
   // Stimme ändern
   voiceSelect.addEventListener('change', (e) => {
     currentLang = e.target.value;
-    updateLanguageDisplay();
-    // Test-TTS nach Wechsel (optional)
-    speak('Test', currentLang);
+    // Flag-Emoji hinzufügen (optional, visuell)
+    const label = voiceSelect.parentElement.querySelector('.control-label');
+    if (label) {
+      label.innerHTML = `Stimme ändern: ${currentLang === 'de' ? '🇩🇪' : '🇨🇳'}`;
+    }
+    speak('Test', currentLang); // Kurzer Test
+    primeTTS(currentLang); // Vollständiger Test
   });
 
-  // Suche
+  // Suche (Töne ignoriert implizit, da toLowerCase)
   searchInput.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
     const filtered = cards.filter(card =>
@@ -135,67 +187,76 @@ document.addEventListener('DOMContentLoaded', () => {
     render(filtered);
   });
 
-  // Study-Modus (Beispiel, erweiterbar)
-  document.getElementById('study-btn').addEventListener('click', () => {
-    // Einfacher Random-Study
+  // Study-Modus (einfach random)
+  studyBtn.addEventListener('click', () => {
+    if (cards.length === 0) return;
     const randomCard = cards[Math.floor(Math.random() * cards.length)];
-    document.getElementById('study-mode').style.display = 'block';
-    document.getElementById('study-cards').innerHTML = `
+    const studySection = document.getElementById('study-mode');
+    const studyContainer = document.getElementById('study-cards');
+    studySection.style.display = 'block';
+    studyContainer.innerHTML = `
       <div class="card">
-        <h3>${randomCard.pinyin}</h3>
-        <p>${randomCard.german}</p>
-        <button onclick="speak('${randomCard.chinese}', 'zh')">Hören</button>
+        <div class="card-front">
+          <h3 class="pinyin">${randomCard.pinyin}</h3>
+          <p class="german">${randomCard.german}</p>
+        </div>
+        <div class="card-back" style="display: block;">
+          <h3 class="chinese">${randomCard.chinese}</h3>
+          <button class="tts-btn" onclick="speak('${randomCard.chinese}', 'zh')">Hören</button>
+        </div>
       </div>
     `;
   });
-});
-
-// Language Display updaten (unverändert, Flags hinzufügen)
-function updateLanguageDisplay() {
-  const voiceSelect = document.getElementById('voiceSelect');
-  voiceSelect.value = currentLang;
-  // Flag-Emojis (optional)
-  const flag = currentLang === 'de' ? '🇩🇪' : '🇨🇳';
-  voiceSelect.parentElement.querySelector('.control-label').textContent += ` ${flag}`;
 }
 
 // ---------- App Start ----------
-(async function(){
-  // PWA: Service Worker registrieren (unverändert)
+(async function() {
+  // PWA: Service Worker registrieren
   if ('serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('sw.js');
+      const registration = await navigator.serviceWorker.register('./sw.js');
       console.log('SW registered:', registration.scope);
     } catch (err) {
       console.log('SW registration failed:', err);
     }
   }
 
-  // TTS Stimmen laden
+  // TTS initialisieren
   loadVoices();
 
   try {
     const t0 = performance.now();
-    const text = await loadCSV();
-    const { rows, delimiter } = parseCSV(text);
+    const csvText = await loadCSV();
+    const { rows, delimiter } = parseCSV(csvText);
     cards = toCards(rows);
     const t1 = performance.now();
 
-    // GEÄNDERT: Meta-Update nur in Console (da HTML kommentiert)
-    console.log(`CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms • PWA: Offline-fähig`);
+    // Debug in Console (da HTML kommentiert)
+    console.log(`CSV geladen • Delimiter: "${delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms • PWA: Offline-fähig`);
 
+    if (cards.length === 0) {
+      throw new Error('Keine gültigen Karten in CSV gefunden');
+    }
+
+    // UI aufbauen
     buildLessonFilters(cards);
-    render(cards);
+    render(cards); // Initial alle zeigen
 
-    // Initialisiere Language Display
-    updateLanguageDisplay();
+    // Events nach DOM-Ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupEvents);
+    } else {
+      setupEvents();
+    }
 
-    // Priming TTS beim Start (GEÄNDERT: Neue Testtexte)
-    const initialLang = 'zh'; // Default
-    primeTTS(initialLang);
+    // Initial TTS-Test (Chinesisch default)
+    setTimeout(() => primeTTS('zh'), 500); // Nach Stimmen-Load
 
   } catch (err) {
     console.error('Fehler beim Laden:', err);
-    document.getElementById('cards').innerHTML = '<p>Fehler: CSV konnte nicht geladen werden. Überprüfe Internet oder Datei.</p>';
+    const cardsSection = document.getElementById('cards');
+    if (cardsSection) {
+      cardsSection.innerHTML = `<p style="text-align: center; color: red;">Fehler: ${err.message}<br>Überprüfe die CSV-Datei oder Internet-Verbindung (Offline: SW-Cache prüfen).</p>`;
+    }
   }
 })();

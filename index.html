@@ -6,42 +6,43 @@
   <title>Chinesisch-Reader Flashcards</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
-  <!-- PWA: Theme für iOS/Safari -->
+  <!-- PWA: Moderne Meta-Tags (FIX: Deprecated Warning behoben) -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Chinesisch-Reader">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- Optional: Favicon (FIX: 404 vermeiden – lade favicon.ico hoch oder ignoriere) -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
   <header>
-    <!-- Stimme ändern (GEÄNDERT: Jetzt OBERHALB der Suche) -->
+    <!-- Stimme ändern (OBEN, wie gewünscht) -->
     <div class="controls">
       <label for="voiceSelect" class="control-label">Stimme ändern:</label>
       <select id="voiceSelect">
         <option value="de">Deutsch</option>
         <option value="zh">Chinesisch</option>
-        <!-- Weitere Sprachen hinzufügbar -->
       </select>
     </div>
 
-    <!-- Suche (GEÄNDERT: Jetzt UNTER der Stimme; Vermerk entfernt) -->
+    <!-- Suche (UNTEN, ohne Vermerk) -->
     <div class="controls">
       <label for="searchInput" class="control-label">Suche:</label>
       <input type="text" id="searchInput" placeholder="Suche in Pinyin oder Deutsch...">
-      <!-- GEÄNDERT: Vermerk "(Töne ignoriert)" entfernt -->
     </div>
 
-    <!-- Debug-Infos (GEÄNDERT: Rauskommentiert – unsichtbar) -->
+    <!-- Debug-Infos (rauskommentiert, wie gewünscht) -->
     <!--
     <div id="meta" class="meta">
-      CSV geladen • Delimiter: "TAB" • Karten: 0 • 0 ms • PWA: Offline-fähig
+      CSV geladen • Delimiter: "," • Karten: 0 • 0 ms • PWA: Offline-fähig
     </div>
     -->
   </header>
 
   <main>
     <section id="filters">
-      <!-- Lektion-Filter (unverändert) -->
+      <!-- Lektion-Filter -->
       <div class="filter-group">
         <label for="lessonSelect">Lektion wählen:</label>
         <select id="lessonSelect">
@@ -51,7 +52,7 @@
     </section>
 
     <section id="cards">
-      <!-- Flashcards werden hier via JS gerendert -->
+      <!-- FIX: Template hier (unsichtbar, für JS-Klonen) -->
       <div class="card" id="card-template" style="display: none;">
         <div class="card-front">
           <h3 class="pinyin"></h3>
@@ -63,9 +64,10 @@
           <button class="tts-btn">TTS</button>
         </div>
       </div>
+      <!-- Karten werden via JS hier gerendert -->
     </section>
 
-    <!-- Study-Modus (unverändert) -->
+    <!-- Study-Modus -->
     <section id="study-mode" style="display: none;">
       <h2>Study-Modus</h2>
       <button id="study-btn">Study starten</button>

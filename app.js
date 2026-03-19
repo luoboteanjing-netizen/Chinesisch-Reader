@@ -602,7 +602,7 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
   // PWA: Service Worker registrieren (nur wenn supported)
   if ('serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.register('sw.js');
       console.log('SW registered:', registration.scope); // Debug
     } catch (err) {
       console.log('SW registration failed:', err); // Fallback: App läuft trotzdem online

@@ -1,13 +1,13 @@
 // Service Worker für PWA: Cache-First Strategie für statische Assets
 const CACHE_NAME = 'flashcards-v1'; // Version für Updates
 const urlsToCache = [
-  '/', // index.html
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/data/Long-Chinesisch_Lektionen.csv', // CSV cachen
-  '/manifest.json'
-  // Füge Icons hinzu, z. B.: '/icons/icon-192.png', '/icons/icon-512.png'
+  './', // <-- Geändert: './' statt '/' (relativ zum Scope)
+  './index.html', // <-- Geändert: './index.html'
+  './style.css',
+  './app.js',
+  './data/Long-Chinesisch_Lektionen.csv', // Relativ – passt
+  './manifest.json'
+  // Füge Icons hinzu, z. B.: './icons/icon-192.png', './icons/icon-512.png'
 ];
 
 // Install: Cache alle Assets
@@ -38,7 +38,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: Cache-First (offline aus Cache, online updaten)
+// Fetch: Cache-First (offline aus Cache, online updaten) – angepasst für Subpfad
 self.addEventListener('fetch', event => {
   // Nur für gleiche Origin (nicht für externe Ressourcen wie Fonts, falls verwendet)
   if (event.request.url.startsWith(self.location.origin)) {
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
             console.log('SW: Fetch failed (offline), no cache:', err); // Debug
             // Fallback für index.html: Zeige Offline-Seite oder leere Response
             if (event.request.destination === 'document') {
-              return caches.match('/'); // Versuche Cache für Home
+              return caches.match('./'); // <-- Geändert: './' für Home
             }
             return new Response('Offline: Keine Verbindung.', { status: 503 });
           });

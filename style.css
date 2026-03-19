@@ -1,10 +1,9 @@
-/* R5 */
-:root{
-  --bg: #0b0c0f;
-  --fg: #e7e7e7;
-  --muted: #9aa0a6;
-  --card: #16181d;
-  --accent: #4cc2ff;
+:root{ 
+ --bg: #0b0c0f; 
+ --fg: #e7e7e7; 
+ --muted: #9aa0a6; 
+ --card: #16181d; 
+ --accent: #4cc2ff; 
 }
 *{ box-sizing:border-box; }
 body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); }
@@ -14,17 +13,17 @@ h1{ font-size:18px; margin:0; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
 /* Schriftgröße für Suchfeld und Zähler auf 16px */
-.controls input[type="text"],  /* Speziell für das Suchfeld #q */
-#count {  /* Zähler unter den Controls */
+.controls input[type="text"],
+#count {
   font-size: 16px;
 }
 .controls .btn{ cursor:pointer; }
-/* Controls unter dem Titel, mobilfreundlich */
-.controls-block{ width:100%; margin-top:10px; }
+/* Controls als Block unter dem Titel, jetzt bewusst vertikal gestapelt */
+.controls-block{ width:100%; margin-top:10px; display:flex; flex-direction: column; align-items: stretch; }
 @media (max-width: 600px){
   .controls-block input,
-  .controls-block button { flex:1 1 100%; margin-bottom:4px; }
-  .controls-block #languageSwitcher { flex-wrap: nowrap; } /* Erzwingt nebeneinander */
+  .controls-block button { flex:1 1 auto; margin-bottom:4px; }
+  .controls-block #languageSwitcher { flex-wrap: nowrap; }
 }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
@@ -37,7 +36,6 @@ h1{ font-size:18px; margin:0; }
 .small{ font-size: 12px; }
 .muted{ color: var(--muted); }
 mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
-
 /* Lektionen */
 .filters{ display:flex; flex-direction:column; gap:10px; margin-bottom: 12px; }
 .legend{ font-size:12px; color:var(--muted); }
@@ -47,178 +45,48 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 .chip input{ accent-color: var(--accent); }
 .filter-actions{ display:flex; align-items:center; gap:8px; }
 .hint{ color:var(--muted); font-size:12px; }
-
 /* Lernmodus */
 .study-bar{ display:flex; align-items:center; gap:8px; justify-content:flex-start; margin-bottom: 12px; }
 .counter{ margin-left:auto; color:var(--muted); }
 .study-card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:16px; min-height: 220px; display:flex; flex-direction:column; gap:12px; }
-
 /* Wortart 2px kleiner und hellgrau */
 .pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
 .wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }
-
 /* Neue Regeln für TTS-Speak-Button und Study-Actions */
 .speak-btn {
   background: none;
   border: none;
-  font-size: 18px;  /* Größe des Emojis */
+  font-size: 18px;
   cursor: pointer;
-  color: var(--accent);  /* Blaue Farbe für Akzent */
-  padding: 8px;  /* Etwas Padding für Klickfläche */
-  border-radius: 50%;  /* Rund für Icon-Look */
-  transition: color 0.2s;  /* Hover-Effekt */
-}
-.speak-btn:hover {
-  color: #6cdbff;  /* Heller beim Hover */
-}
-.study-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;  /* Abstand zur Karte */
-  justify-content: flex-start;  /* Links ausrichten */
-}
-
-/* Language Switcher Styling */
-#languageSwitcher {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex: 1; /* Nimmt verfügbaren Platz ein, aber nicht mehr als nötig */
-  min-width: 180px; /* Angepasst für größeren Button */
-}
-#languageSwitcher span {
-  background: #0e1116;
-  color: var(--fg);
-  border: 1px solid #2a2f39;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 16px;
-  min-width: 80px;
-  text-align: center;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#languageSwitcher .switch-btn {
-  background: #0e1116;
   color: var(--accent);
-  border: 1px solid #2a2f39;
-  border-radius: 8px;
-  padding: 10px; /* Etwas mehr Padding für größeren Button */
-  font-size: 20px; /* +2px größer */
-  width: 38px; /* 20% breiter/höher (von 32px) */
-  min-width: unset;
-  height: 38px; /* Quadratisch */
-  flex: 0 0 38px; /* Kein Grow/Shrink */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-#languageSwitcher .switch-btn:hover {
-  background: #2a2f39;
-  color: #6cdbff;
-}
-/* Mobile: Nebeneinander halten, kompakter aber größer */
-@media (max-width: 600px) {
-  #languageSwitcher { 
-    gap: 4px; /* Kleineres Gap für Mobile */
-    min-width: auto; /* Passt sich an */
-  }
-  #languageSwitcher span { 
-    min-width: 60px; /* Etwas kürzer für Mobile */
-    padding: 6px 8px; /* Weniger Padding */
-  }
-  #languageSwitcher .switch-btn { 
-    padding: 8px; /* Anpassung für Mobile */
-    width: 34px; /* 20% größer (von 28px) */
-    height: 34px; 
-    font-size: 18px; /* +2px größer */
-    flex: 0 0 34px;
-  }
-}
-
-/* TTS Modal Styling */
-.modal {
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  background: var(--card);
-  border: 1px solid #242933;
-  border-radius: 12px;
-  padding: 20px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #2a2f39;
-  padding-bottom: 8px;
-}
-.modal-header h2 { margin: 0; font-size: 18px; }
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.close-btn:hover { background: #2a2f39; color: var(--fg); }
-.modal-body label {
-  display: block;
-  margin: 12px 0 4px;
-  font-size: 14px;
-  color: var(--fg);
-}
-.modal-body select,
-.modal-body input[type="range"] {
-  width: 100%;
-  background: #0e1116;
-  color: var(--fg);
-  border: 1px solid #2a2f39;
-  border-radius: 8px;
   padding: 8px;
-  font-size: 14px;
-}
-.modal-body input[type="range"] {
-  padding: 0;
-  height: 6px;
-  background: #2a2f39;
-  accent-color: var(--accent);
-}
-.modal-body input[type="range"]::-webkit-slider-thumb {
-  background: var(--accent);
-  border: none;
-  height: 20px;
-  width: 20px;
   border-radius: 50%;
-  cursor: pointer;
+  transition: color 0.2s;
 }
-.modal-body .btn {
-  width: 100%;
-  margin-top: 8px;
+.speak-btn:hover { color: #6cdbff; }
+.study-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-start; }
+/* Language Switcher Styling */
+#languageSwitcher { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 180px; }
+#languageSwitcher span { background: #0e1116; color: var(--fg); border: 1px solid #2a2f39; border-radius: 8px; padding: 8px 10px; font-size: 16px; min-width: 80px; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
+#languageSwitcher .switch-btn { background: #0e1116; color: var(--accent); border: 1px solid #2a2f39; border-radius: 8px; padding: 10px; font-size: 20px; width: 38px; min-width: unset; height: 38px; flex: 0 0 38px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+#languageSwitcher .switch-btn:hover { background: #2a2f39; color: #6cdbff; }
+@media (max-width: 600px) {
+  #languageSwitcher { gap: 4px; min-width: auto; }
+  #languageSwitcher span { min-width: 60px; padding: 6px 8px; }
+  #languageSwitcher .switch-btn { padding: 8px; width: 34px; height: 34px; font-size: 18px; flex: 0 0 34px; }
 }
-#voiceSelect, #pitchValue, #rateValue { font-family: monospace; } /* Für bessere Lesbarkeit von Namen */
+/* TTS Modal Styling */
+.modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; }
+.modal-content { background: var(--card); border: 1px solid #242933; border-radius: 12px; padding: 20px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #2a2f39; padding-bottom: 8px; }
+.modal-header h2 { margin: 0; font-size: 18px; }
+.close-btn { background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; padding: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.close-btn:hover { background: #2a2f39; color: var(--fg); }
+.modal-body label { display: block; margin: 12px 0 4px; font-size: 14px; color: var(--fg); }
+.modal-body select,
+.modal-body input[type="range"] { width: 100%; background: #0e1116; color: var(--fg); border: 1px solid #2a2f39; border-radius: 8px; padding: 8px; font-size: 14px; }
+.modal-body input[type="range"] { padding: 0; height: 6px; background: #2a2f39; accent-color: var(--accent); }
+.modal-body input[type="range"]::-webkit-slider-thumb { background: var(--accent); border: none; height: 20px; width: 20px; border-radius: 50%; cursor: pointer; }
+.modal-body .btn { width: 100%; margin-top: 8px; }
+#voiceSelect, #pitchValue, #rateValue { font-family: monospace; }

@@ -128,17 +128,17 @@ function speakCard(c, current) {
     sentenceText = c.sentence.de;
     lang = 'de-DE'; // Deutsch
   }
-  // Wort mit kleinem Delay starten (API primen)
+  // Wort mit angepasstem Delay starten (API primen)
   if (wordText) {
     setTimeout(() => {
       speak(wordText, lang);
-    }, 100); // 100ms Delay für Wort
+    }, 200); // 200ms Delay für Wort (0.2s)
   }
   // Satz mit längerer Verzögerung (vermeidet Überlagerung)
   if (sentenceText) {
     setTimeout(() => {
       speak(sentenceText, lang);
-    }, 1500); // 1.5s total: Genug Puffer für Wort-Abschluss
+    }, 2000); // 2s total: Genug Puffer für Wort-Abschluss
   }
 }
 

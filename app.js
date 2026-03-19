@@ -241,22 +241,51 @@ function speakCard(c, current) {
     wordText = c.word.hanzi || ''; // Immer Hanzi (Fallback leer)
     sentenceText = c.sentence.hanzi || ''; // Immer Hanzi (Fallback leer)
     lang = 'zh';
+    fullLang = 'zh-CN'; // Für utterance.lang
   } else {
     wordText = c.word.de;
     sentenceText = c.sentence.de;
     lang = 'de';
+    fullLang = 'de-DE'; // Für utterance.lang
   }
-  // Wort mit angepasstem Delay starten (API primen)
+
+  if (!('speechSynthesis' in window)) return; // API nicht verfügbar
+
+  // TTS-Settings laden (global für Sequenz)
+  const settings = getTTSSettings(lang);
+  const voicesForLang = getVoicesForLang(lang);
+  const selectedVoice = settings.voiceName && voicesForLang.length > 0 ? voicesForLang.find(voice => voice.name === settings.voiceName) : null;
+
+  // Wort mit Delay starten (API primen)
   if (wordText) {
     setTimeout(() => {
-      speak(wordText, lang);
-    }, 200); // 200ms Delay für Wort (0.2s)
-  }
-  // Satz mit längerer Verzögerung (vermeidet Überlagerung)
-  if (sentenceText) {
+      speechSynthesis.cancel(); // Vorheriges stoppen
+      const wordUtterance = new SpeechSynthesisUtterance(wordText);
+      wordUtterance.lang = fullLang;
+      if (selectedVoice) wordUtterance.voice = selectedVoice;
+      wordUtterance.pitch = settings.pitch;
+      wordUtterance.rate = settings.rate;
+      wordUtterance.volume = 1.0;
+
+      // Event: Wenn Wort fertig, starte Satz mit Buffer (Atempause)
+      wordUtterance.onend = () => {
+        setTimeout(() => {
+          if (sentenceText) {
+            speak(sentenceText, lang); // Nutze bestehende speak() für Satz
+            // console.log('Word ended, starting sentence after buffer'); // Debug
+          }
+        }, 200); // 200ms Buffer – passe bei Bedarf an (z.B. 300-500ms)
+      };
+
+      speechSynthesis.speak(wordUtterance);
+      // console.log('Started word:', wordText, 'in', lang); // Debug
+    }, 200); // 200ms Start-Delay für Wort
+  } else if (sentenceText) {
+    // Fallback: Kein Wort → Satz direkt starten
     setTimeout(() => {
       speak(sentenceText, lang);
-    }, 2000); // 2s total: Genug Puffer für Wort-Abschluss
+      // console.log('No word, starting sentence directly'); // Debug
+    }, 200);
   }
 }
 

@@ -89,39 +89,56 @@ function highlightToneInsensitive(originalText, query){
 }
 
 // ---------- TTS-Funktionen ----------
-function speak(text, lang) {
+function speak(text, lang, volume = 1.0, rate = 0.8) {
   if (!text || !('speechSynthesis' in window)) return; // Fallback, wenn API nicht verfügbar
-  // Vorherige Sprachsynthese stoppen, um Unterbrechungen zu vermeiden
+  // Vorherige Sprachsynthese stoppen
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = 0.8; // Etwas langsamer für bessere Verständlichkeit
-  utterance.volume = 1.0;
+  utterance.rate = rate;
+  utterance.volume = volume;
   utterance.pitch = 1.0;
   speechSynthesis.speak(utterance);
+  // console.log('Speaking:', text, 'in', lang); // Debug: Aktiviere für Logs
+}
+
+function primeTTS(initialLang) {
+  if (!('speechSynthesis' in window)) return; // Kein Priming, wenn nicht verfügbar
+  setTimeout(() => {
+    let primeText = 'Hallo';
+    let lang = 'de-DE';
+    if (initialLang === 'zh') {
+      primeText = 'Nǐ hǎo'; // Hallo auf Chinesisch
+      lang = 'zh-CN';
+    }
+    speak(primeText, lang, 0.3, 1.0); // Leise (0.3 Volumen), normale Rate
+    // console.log('Priming TTS with:', primeText, 'in', lang); // Debug
+  }, 500); // 500ms nach App-Start, um Laden nicht zu stören
 }
 
 function speakCard(c, current) {
   let wordText, sentenceText, lang;
   if (current === 'zh') {
-    wordText = c.word.pinyin || c.word.hanzi; // Pinyin bevorzugt für Aussprache; Fallback Hanzi
-    sentenceText = c.sentence.pinyin || c.sentence.hanzi; // Pinyin für Satz-Aussprache
+    // Fix: Hanzi forcieren für natürliche Aussprache
+    wordText = c.word.hanzi || ''; // Immer Hanzi (Fallback leer)
+    sentenceText = c.sentence.hanzi || ''; // Immer Hanzi (Fallback leer)
     lang = 'zh-CN'; // Mandarin-Chinesisch
   } else {
     wordText = c.word.de;
     sentenceText = c.sentence.de;
     lang = 'de-DE'; // Deutsch
   }
-  // Fix: Kleines Delay für das Wort, um API zu "primem" und Abbrüche zu vermeiden
+  // Wort mit kleinem Delay starten (API primen)
   if (wordText) {
     setTimeout(() => {
       speak(wordText, lang);
-    }, 100); // 100ms Delay für Wort – gibt der API Zeit zur Initialisierung
+    }, 100); // 100ms Delay für Wort
   }
+  // Satz mit längerer Verzögerung (vermeidet Überlagerung)
   if (sentenceText) {
     setTimeout(() => {
       speak(sentenceText, lang);
-    }, 700); // 700ms total (100ms Buffer + 600ms Abstand) für Satz
+    }, 1500); // 1.5s total: Genug Puffer für Wort-Abschluss
   }
 }
 
@@ -428,6 +445,10 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
 
     buildLessonFilters(cards);
     render(cards);
+
+    // Priming TTS beim Start (leises "Hallo" in initialer Sprache 'zh')
+    const initialLang = 'zh'; // Default-Seite
+    primeTTS(initialLang);
 
     // Events
     const sideSel = document.getElementById('side');

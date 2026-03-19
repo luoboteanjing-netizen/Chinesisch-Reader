@@ -112,13 +112,16 @@ function speakCard(c, current) {
     sentenceText = c.sentence.de;
     lang = 'de-DE'; // Deutsch
   }
+  // Fix: Kleines Delay für das Wort, um API zu "primem" und Abbrüche zu vermeiden
   if (wordText) {
-    speak(wordText, lang);
+    setTimeout(() => {
+      speak(wordText, lang);
+    }, 100); // 100ms Delay für Wort – gibt der API Zeit zur Initialisierung
   }
   if (sentenceText) {
     setTimeout(() => {
       speak(sentenceText, lang);
-    }, 600); // 0.6 Sekunden Verzögerung nach dem Wort
+    }, 700); // 700ms total (100ms Buffer + 600ms Abstand) für Satz
   }
 }
 

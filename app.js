@@ -235,7 +235,7 @@ function primeTTS(initialLang) {
 }
 
 function speakCard(c, current) {
-  let wordText, sentenceText, lang;
+  let wordText, sentenceText, lang, fullLang;
   if (current === 'zh') {
     // Fix: Hanzi forcieren für natürliche Aussprache
     wordText = c.word.hanzi || ''; // Immer Hanzi (Fallback leer)
@@ -286,6 +286,20 @@ function speakCard(c, current) {
       speak(sentenceText, lang);
       // console.log('No word, starting sentence directly'); // Debug
     }, 200);
+  }
+}
+
+// ---------- Language Switcher Funktionen ----------
+function updateLanguageDisplay() {
+  const side = document.getElementById('side').value;
+  const sourceEl = document.getElementById('sourceLang');
+  const targetEl = document.getElementById('targetLang');
+  if (side === 'zh') {
+    sourceEl.textContent = 'Chinesisch';
+    targetEl.textContent = 'Deutsch';
+  } else {
+    sourceEl.textContent = 'Deutsch';
+    targetEl.textContent = 'Chinesisch';
   }
 }
 
@@ -375,7 +389,7 @@ function getSearchHaystack(card, side){
 function render(cards){
   const grid = document.getElementById('grid');
   const empty = document.getElementById('empty');
-  const sideSel = document.getElementById('side');
+  const sideSel = document.getElementById('side'); // hidden input
   const qRaw = document.getElementById('q').value.trim();
 
   const qNorm = stripToneMarks(qRaw).toLowerCase();
@@ -596,9 +610,24 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     buildLessonFilters(cards);
     render(cards);
 
+    // Initialisiere Language Display
+    updateLanguageDisplay();
+
     // Priming TTS beim Start (leises "Hallo" in initialer Sprache 'zh')
     const initialLang = 'zh'; // Default-Seite
     primeTTS(initialLang);
+
+    // Language Switcher Event
+    document.getElementById('switchDir').addEventListener('click', () => {
+      const side = document.getElementById('side');
+      side.value = (side.value === 'zh' ? 'de' : 'zh');
+      updateLanguageDisplay();
+      render(cards); // Karten updaten
+      // Update Modal bei Wechsel (falls offen)
+      if (document.getElementById('ttsModal').style.display !== 'none') {
+        updateTTSModal(side.value);
+      }
+    });
 
     // TTS Modal Events
     document.getElementById('ttsSettingsBtn').addEventListener('click', showTTSSettings);
@@ -620,15 +649,7 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     });
 
     // Events
-    const sideSel = document.getElementById('side');
     const q = document.getElementById('q');
-    sideSel.addEventListener('change', () => {
-      render(cards);
-      // Update Modal bei Sprache-Wechsel (falls offen)
-      if (document.getElementById('ttsModal').style.display !== 'none') {
-        updateTTSModal(sideSel.value);
-      }
-    });
     q.addEventListener('input', () => render(cards));
     document.getElementById('lesson_all').addEventListener('change', () => render(cards));
     document.getElementById('lessonFilters').addEventListener('change', () => render(cards));

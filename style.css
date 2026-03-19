@@ -11,9 +11,8 @@ header{ display:block; padding: 12px 16px; position:sticky; top:0; background:rg
 h1{ font-size:18px; margin:0; }
 .container{ max-width: 980px; margin: 0 auto; padding:16px; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
-.controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
-/* Schriftgröße für Select (Sprache), Input (Suche) und Zähler auf 16px (wie angepasst) */
-.controls select,
+.controls input, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
+/* Schriftgröße für Suchfeld und Zähler auf 16px */
 .controls input[type="text"],  /* Speziell für das Suchfeld #q */
 #count {  /* Zähler unter den Controls */
   font-size: 16px;
@@ -22,9 +21,9 @@ h1{ font-size:18px; margin:0; }
 /* Controls unter dem Titel, mobilfreundlich */
 .controls-block{ width:100%; margin-top:10px; }
 @media (max-width: 600px){
-  .controls-block select,
   .controls-block input,
-  .controls-block button{ flex:1 1 100%; margin-bottom:4px; }
+  .controls-block button,
+  .controls-block .language-switcher { flex:1 1 100%; margin-bottom:4px; }
 }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
@@ -77,6 +76,45 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   gap: 8px;
   margin-top: 12px;  /* Abstand zur Karte */
   justify-content: flex-start;  /* Links ausrichten */
+}
+
+/* Language Switcher Styling */
+#languageSwitcher {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1; /* Nimmt verfügbaren Platz ein, aber nicht mehr als nötig */
+  min-width: 200px; /* Mindestbreite für die drei Elemente */
+}
+#languageSwitcher span {
+  background: #0e1116;
+  color: var(--fg);
+  border: 1px solid #2a2f39;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 16px;
+  min-width: 80px;
+  text-align: center;
+  flex: 1;
+}
+#languageSwitcher .switch-btn {
+  background: #0e1116;
+  color: var(--accent);
+  border: 1px solid #2a2f39;
+  border-radius: 8px;
+  padding: 8px 6px;
+  font-size: 14px;
+  min-width: 60px;
+  flex: 0 0 auto; /* Feste Breite, kein Grow */
+  transition: background 0.2s;
+}
+#languageSwitcher .switch-btn:hover {
+  background: #2a2f39;
+  color: #6cdbff;
+}
+@media (max-width: 600px) {
+  #languageSwitcher { flex-direction: column; gap: 4px; min-width: auto; }
+  #languageSwitcher span, #languageSwitcher .switch-btn { min-width: auto; flex: 1; }
 }
 
 /* TTS Modal Styling */

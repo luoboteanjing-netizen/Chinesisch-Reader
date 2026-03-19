@@ -12,10 +12,13 @@
 
     <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
     <div class="controls controls-block">
-      <select id="side" title="Vorderseite wählen">
-        <option value="zh">Seite: Chinesisch</option>
-        <option value="de">Seite: Deutsch</option>
-      </select>
+      <!-- Language Switcher: Drei Felder in Reihe (Quell, Wechsel-Button, Ziel) -->
+      <div id="languageSwitcher">
+        <input type="hidden" id="side" value="zh" />
+        <span id="sourceLang">Chinesisch</span>
+        <button class="btn switch-btn" id="switchDir" title="Sprachrichtung wechseln">↔ Wechseln</button>
+        <span id="targetLang">Deutsch</span>
+      </div>
       <input id="q" placeholder="Suche (Töne ignoriert)…" />
       <button class="btn" id="ttsSettingsBtn" title="Stimme, Tonhöhe und Geschwindigkeit ändern">Stimme ändern</button>
     </div>

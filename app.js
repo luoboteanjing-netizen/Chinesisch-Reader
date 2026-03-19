@@ -1,9 +1,7 @@
 // R5--- Konfiguration ---
 const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
-
 // Globale Variablen für TTS
-let voices = []; // Geladene Stimmen
-
+let voices = [];
 // ---------- Hilfsfunktionen ----------
 function detectDelimiter(sample){
   const first = (sample.split(/\r?\n/)[0] || '');
@@ -12,12 +10,11 @@ function detectDelimiter(sample){
     { d: ',', n: countSplit(first, ',') },
     { d: ';', n: countSplit(first, ';') },
     { d: '\t', n: countSplit(first, '\t') },
-    { d: '|', n: countSplit(first, '|') }
+    { d: '\n', n: countSplit(first, '\n') }
   ];
   candidates.sort((a,b)=>b.n-a.n);
   return (candidates[0].n>0 ? candidates[0].d : ';');
 }
-
 function parseCSV(text){
   const delimiter = detectDelimiter(text);
   const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
@@ -48,7 +45,6 @@ function parseCSV(text){
   }
   return { rows, delimiter };
 }
-
 async function loadCSV(){
   try {
     const res = await fetch(CSV_PATH);
@@ -60,19 +56,16 @@ async function loadCSV(){
     throw new Error('Offline: CSV konnte nicht geladen werden. Bitte online gehen für Setup.');
   }
 }
-
 function isHeaderRow(cells){
   const h = cells.join(' ').toLowerCase();
   return /(deutsch|pinyin|wortart|hanzi|satz|id)/.test(h);
 }
-
 function stripToneMarks(s){
   if (!s) return s;
   try {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   } catch { return s; }
 }
-
 function highlightToneInsensitive(originalText, query){
   if (!query) return originalText;
   const qNorm = stripToneMarks(query).toLowerCase();
@@ -95,14 +88,12 @@ function highlightToneInsensitive(originalText, query){
     o.slice(endOrig)
   );
 }
-
 // ---------- TTS-Funktionen ----------
 function loadVoices() {
   if ('speechSynthesis' in window) {
     voices = speechSynthesis.getVoices();
     speechSynthesis.onvoiceschanged = () => {
       voices = speechSynthesis.getVoices();
-      // Aktualisiere Modal, falls offen
       const modal = document.getElementById('ttsModal');
       if (modal.style.display !== 'none') {
         updateTTSModal(document.getElementById('side').value);
@@ -110,12 +101,10 @@ function loadVoices() {
     };
   }
 }
-
 function getVoicesForLang(lang) {
   const langCode = lang === 'zh' ? 'zh-CN' : 'de-DE';
   return voices.filter(voice => voice.lang.startsWith(lang === 'zh' ? 'zh' : 'de'));
 }
-
 function getTTSSettings(lang) {
   const voiceKey = `tts_voice_${lang}`;
   const pitchKey = `tts_pitch_${lang}`;
@@ -126,7 +115,6 @@ function getTTSSettings(lang) {
     rate: parseFloat(localStorage.getItem(rateKey)) || (lang === 'zh' ? 0.8 : 0.8)
   };
 }
-
 function saveTTSSettings(lang) {
   const voiceSelect = document.getElementById('voiceSelect');
   const pitchSlider = document.getElementById('pitchSlider');
@@ -138,7 +126,6 @@ function saveTTSSettings(lang) {
   localStorage.setItem(pitchKey, pitchSlider.value);
   localStorage.setItem(rateKey, rateSlider.value);
 }
-
 function updateTTSModal(lang) {
   const select = document.getElementById('voiceSelect');
   const voicesForLang = getVoicesForLang(lang);
@@ -153,27 +140,24 @@ function updateTTSModal(lang) {
     option.textContent = `${voice.name} (${voice.lang})`;
     select.appendChild(option);
   });
-  // Setze gespeicherte Voice
   const settings = getTTSSettings(lang);
-  select.value = settings.voiceName || voicesForLang[0].name; // Default: Erste Stimme
+  select.value = settings.voiceName || voicesForLang[0].name;
   document.getElementById('pitchSlider').value = settings.pitch;
   document.getElementById('pitchValue').textContent = settings.pitch;
   document.getElementById('rateSlider').value = settings.rate;
   document.getElementById('rateValue').textContent = settings.rate;
 }
-
 function showTTSSettings() {
   const lang = document.getElementById('side').value;
-  loadVoices(); // Sicherstellen, dass Stimmen geladen sind
+  loadVoices();
   updateTTSModal(lang);
   document.getElementById('ttsModal').style.display = 'flex';
 }
-
 function testVoice() {
   if (!('speechSynthesis' in window)) return;
   const lang = document.getElementById('side').value;
   const testText = lang === 'zh' ? 'Nǐ hǎo' : 'Hallo';
-  speechSynthesis.cancel(); // Alte Speech stoppen
+  speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(testText);
   utterance.lang = lang === 'zh' ? 'zh-CN' : 'de-DE';
   const voicesForLang = getVoicesForLang(lang);
@@ -186,19 +170,14 @@ function testVoice() {
   }
   utterance.pitch = parseFloat(pitchSlider.value);
   utterance.rate = parseFloat(rateSlider.value);
-  utterance.volume = 0.5; // Mittelstark für Test
+  utterance.volume = 0.5;
   speechSynthesis.speak(utterance);
-  // console.log('Testing voice with:', testText, 'pitch:', utterance.pitch, 'rate:', utterance.rate); // Debug
 }
-
 function speak(text, lang, volume = 1.0) {
-  if (!text || !('speechSynthesis' in window)) return; // Fallback, wenn API nicht verfügbar
-  // Vorherige Sprachsynthese stoppen
+  if (!text || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang === 'zh' ? 'zh-CN' : 'de-DE';
-
-  // TTS-Settings laden und anwenden
   const settings = getTTSSettings(lang);
   const voicesForLang = getVoicesForLang(lang);
   if (settings.voiceName && voicesForLang.length > 0) {
@@ -208,21 +187,14 @@ function speak(text, lang, volume = 1.0) {
   utterance.pitch = settings.pitch;
   utterance.rate = settings.rate;
   utterance.volume = volume;
-
   speechSynthesis.speak(utterance);
-  // console.log('Speaking:', text, 'in', lang, 'with voice:', utterance.voice?.name, 'pitch:', utterance.pitch, 'rate:', utterance.rate); // Debug
 }
-
 function primeTTS(initialLang) {
-  if (!('speechSynthesis' in window)) return; // Kein Priming, wenn nicht verfügbar
+  if (!('speechSynthesis' in window)) return;
   setTimeout(() => {
     let primeText = 'Hallo';
     let speakLang = 'de';
-    if (initialLang === 'zh') {
-      primeText = 'Nǐ hǎo'; // Hallo auf Chinesisch
-      speakLang = 'zh';
-    }
-    // Nutze Settings für Priming
+    if (initialLang === 'zh') { primeText = 'Nǐ hǎo'; speakLang = 'zh'; }
     const settings = getTTSSettings(speakLang);
     const voicesForLang = getVoicesForLang(speakLang);
     const utterance = new SpeechSynthesisUtterance(primeText);
@@ -233,67 +205,41 @@ function primeTTS(initialLang) {
     }
     utterance.pitch = settings.pitch;
     utterance.rate = settings.rate;
-    utterance.volume = 0.3; // Leise
+    utterance.volume = 0.3;
     speechSynthesis.speak(utterance);
-    // console.log('Priming TTS with:', primeText, 'in', speakLang); // Debug
-  }, 500); // 500ms nach App-Start
+  }, 500);
 }
-
 function speakCard(c, current) {
   let wordText, sentenceText, lang, fullLang;
   if (current === 'zh') {
-    // Fix: Hanzi forcieren für natürliche Aussprache
-    wordText = c.word.hanzi || ''; // Immer Hanzi (Fallback leer)
-    sentenceText = c.sentence.hanzi || ''; // Immer Hanzi (Fallback leer)
-    lang = 'zh';
-    fullLang = 'zh-CN'; // Für utterance.lang
+    wordText = c.word.hanzi || '';
+    sentenceText = c.sentence.hanzi || '';
+    lang = 'zh'; fullLang = 'zh-CN';
   } else {
-    wordText = c.word.de;
-    sentenceText = c.sentence.de;
-    lang = 'de';
-    fullLang = 'de-DE'; // Für utterance.lang
+    wordText = c.word.de; sentenceText = c.sentence.de; lang = 'de'; fullLang = 'de-DE';
   }
-
-  if (!('speechSynthesis' in window)) return; // API nicht verfügbar
-
-  // TTS-Settings laden (global für Sequenz)
+  if (!('speechSynthesis' in window)) return;
   const settings = getTTSSettings(lang);
   const voicesForLang = getVoicesForLang(lang);
   const selectedVoice = settings.voiceName && voicesForLang.length > 0 ? voicesForLang.find(voice => voice.name === settings.voiceName) : null;
-
-  // Wort mit Delay starten (API primen)
   if (wordText) {
     setTimeout(() => {
-      speechSynthesis.cancel(); // Vorheriges stoppen
+      speechSynthesis.cancel();
       const wordUtterance = new SpeechSynthesisUtterance(wordText);
       wordUtterance.lang = fullLang;
       if (selectedVoice) wordUtterance.voice = selectedVoice;
       wordUtterance.pitch = settings.pitch;
       wordUtterance.rate = settings.rate;
       wordUtterance.volume = 1.0;
-
-      // Event: Wenn Wort fertig, starte Satz mit Buffer (Atempause)
       wordUtterance.onend = () => {
-        setTimeout(() => {
-          if (sentenceText) {
-            speak(sentenceText, lang); // Nutze bestehende speak() für Satz
-            // console.log('Word ended, starting sentence after buffer'); // Debug
-          }
-        }, 200); // 200ms Buffer – passe bei Bedarf an (z.B. 300-500ms)
+        setTimeout(() => { if (sentenceText) { speak(sentenceText, lang); } }, 200);
       };
-
       speechSynthesis.speak(wordUtterance);
-      // console.log('Started word:', wordText, 'in', lang); // Debug
-    }, 200); // 200ms Start-Delay für Wort
-  } else if (sentenceText) {
-    // Fallback: Kein Wort → Satz direkt starten
-    setTimeout(() => {
-      speak(sentenceText, lang);
-      // console.log('No word, starting sentence directly'); // Debug
     }, 200);
+  } else if (sentenceText) {
+    setTimeout(() => { speak(sentenceText, lang); }, 200);
   }
 }
-
 // ---------- Language Switcher Funktionen ----------
 function updateLanguageDisplay() {
   const side = document.getElementById('side').value;
@@ -307,60 +253,44 @@ function updateLanguageDisplay() {
     targetEl.innerHTML = '🇨🇳 Chinesisch';
   }
 }
-
 // ---------- Datenaufbereitung ----------
 function toCards(rows){
   const cards = [];
   let start = 0;
-  if (rows.length && isHeaderRow(rows[0])) start = 1; // Daten ab Zeile 2
+  if (rows.length && isHeaderRow(rows[0])) start = 1;
   for (let i=start; i<rows.length; i++){
     const r = rows[i] || [];
-    const c = (idx)=> (r[idx]||'').trim();
-
-    // Skip-Markierung: erste Zelle enthält '*'
+    const c = (idx)=> (r[idx] || '').trim();
     const firstCell = c(0);
     if (firstCell.includes('*')) continue;
-
     const de_word = c(0);
     const py_word = c(1);
-    const pos     = c(2);
+    const pos = c(2);
     const py_sent = c(3);
     const de_sent = c(4);
     const hz_word = c(5);
     const hz_sent = c(6);
-    const id_raw  = c(7); // ID aus Spalte H
-    const lesson_raw = c(8); // Lektionsname aus Spalte I
-
-    if (!(de_word || py_word || pos || py_sent || de_sent || hz_word || hz_sent)) continue;
-
+    const id_raw = c(7);
+    const lesson_raw = c(8);
+    if (!(de_word && py_word && pos && py_sent && de_sent && hz_word && hz_sent)) continue;
     const id = id_raw || `row${i+1}`;
-    const lesson = lesson_raw || `Lektion ${i - start + 1}`; // Lektionsname direkt aus Spalte I, oder Fallback
-
-    // Lines werden beim Rendern zusammengesetzt (damit POS direkt am Wort hängt)
-    cards.push({
-      id, lesson,
+    const lesson = lesson_raw || `Lektion ${i - start + 1}`;
+    cards.push({ id, lesson,
       word: { de: de_word, pinyin: py_word, hanzi: hz_word, pos },
       sentence: { de: de_sent, pinyin: py_sent, hanzi: hz_sent }
     });
   }
   return cards;
 }
-
 // ---------- UI Listenansicht ----------
 function buildLessonFilters(cards){
   const box = document.getElementById('lessonFilters');
   box.innerHTML = '';
-  // Lektionen in der Reihenfolge ihres ersten Auftretens in der CSV sammeln (natürliche Reihenfolge)
   const lessons = [];
   const seen = new Set();
-  cards.forEach(c => {
-    if (c.lesson && !seen.has(c.lesson)) {
-      seen.add(c.lesson);
-      lessons.push(c.lesson);
-    }
-  });
+  cards.forEach(c => { if (c.lesson && !seen.has(c.lesson)) { seen.add(c.lesson); lessons.push(c.lesson); } });
   lessons.forEach(lesson => {
-    const id = `lesson_${lesson.replace(/\s+/g, '_')}`; // ID sicher machen, Leerzeichen ersetzen
+    const id = `lesson_${lesson.replace(/\s+/g, '_')}`;
     const lbl = document.createElement('label');
     lbl.className = 'chip';
     lbl.innerHTML = `<input type="checkbox" id="${id}" data-lesson="${lesson}" checked> Lektion ${lesson}`;
@@ -373,14 +303,12 @@ function buildLessonFilters(cards){
   allCb.addEventListener('change', () => setAll(allCb.checked));
   cbs.forEach(cb => cb.addEventListener('change', refreshAll));
 }
-
 function getSelectedLessons(){
   const chips = document.querySelectorAll('#lessonFilters input[type="checkbox"][data-lesson]');
   const selected = [];
   chips.forEach(cb => { if (cb.checked) selected.push(cb.getAttribute('data-lesson')); });
   return selected;
 }
-
 function getSearchHaystack(card, side){
   const fields = [card.word.pos].filter(Boolean);
   if (side === 'zh') {
@@ -390,122 +318,83 @@ function getSearchHaystack(card, side){
   }
   return fields.filter(Boolean).join(' ');
 }
-
 function render(cards){
   const grid = document.getElementById('grid');
   const empty = document.getElementById('empty');
-  const sideSel = document.getElementById('side'); // hidden input
+  const sideSel = document.getElementById('side');
   const qRaw = document.getElementById('q').value.trim();
-
   const qNorm = stripToneMarks(qRaw).toLowerCase();
   const selectedLessons = getSelectedLessons();
   const restrictByLesson = selectedLessons.length > 0;
   const currentSide = sideSel.value;
-
   const filtered = cards.filter(c => {
     if (restrictByLesson && !selectedLessons.includes(c.lesson)) return false;
     if (!qNorm) return true;
     const hay = getSearchHaystack(c, currentSide);
     return stripToneMarks(hay).toLowerCase().includes(qNorm);
   });
-
   document.getElementById('count').textContent = `${filtered.length} Karten`;
   grid.innerHTML = '';
-
-  if (filtered.length === 0){
-    empty.style.display = 'block';
-    return;
-  } else {
-    empty.style.display = 'none';
-  }
-
+  if (filtered.length === 0){ empty.style.display = 'block'; return; } else { empty.style.display = 'none'; }
   filtered.forEach(c => {
     const el = document.createElement('div');
     el.className = 'card';
-
-    let current = sideSel.value; // 'zh' oder 'de'
-
+    let current = sideSel.value;
     const idDiv = document.createElement('div');
     idDiv.className = 'id';
     idDiv.textContent = `ID: ${c.id}`;
-
     const linesDiv = document.createElement('div');
     linesDiv.className = 'lines';
-
     function makeLines(){
       const posSpan = c.word.pos ? `<span class="pos">(${c.word.pos})</span>` : '';
       if(current==='zh'){
-        // Chinesisch: Hanzi (erste Line), Pinyin + 3 Leerzeichen + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
         const l1 = c.word.hanzi || '';
-        const l2 = (c.word.pinyin || '') + (c.word.pos ? '   ' + posSpan : '');
+        const l2 = (c.word.pinyin || '') + (c.word.pos ? ' ' + posSpan : '');
         const l3 = c.sentence.hanzi || '';
         const l4 = c.sentence.pinyin || '';
         return [l1, l2, l3, l4].filter(Boolean);
       } else {
-        // Deutsch: Wort (erste Line), POS (separate zweite Line), Satz (dritte Line)
         const l1 = c.word.de || '';
         const l2 = posSpan;
         const l3 = c.sentence.de || '';
         return [l1, l2, l3].filter(Boolean);
       }
     }
-
     function draw(){
       linesDiv.innerHTML = '';
       const lines = makeLines();
       lines.forEach((line, idx) => {
         const div = document.createElement('div');
         let className = 'line';
-        if (idx === 0) {
-          className += ' wordline';
-          if (current === 'zh') className += ' zh';
-        }
+        if (idx === 0) { className += ' wordline'; if (current === 'zh') className += ' zh'; }
         div.className = className;
         div.innerHTML = highlightToneInsensitive(line, qRaw);
         linesDiv.appendChild(div);
       });
     }
-
     draw();
-
     const actions = document.createElement('div');
     actions.className = 'actions';
-
-    // Umdrehen-Button
     const flip = document.createElement('button');
     flip.className = 'btn';
     flip.textContent = 'Umdrehen';
-    flip.addEventListener('click', () => { 
-      current = (current === 'zh' ? 'de' : 'zh'); 
-      draw(); 
-    });
-
-    // Speak-Button (Symbol: Lautsprecher-Emoji)
-    const speak = document.createElement('button');
-    speak.className = 'speak-btn';
-    speak.innerHTML = '🔊'; // Emoji für Lautsprecher
-    speak.title = 'Vorlesen (Wort, dann Satz)';
-    speak.addEventListener('click', () => speakCard(c, current));
-
+    flip.addEventListener('click', () => { current = (current === 'zh' ? 'de' : 'zh'); draw(); });
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'speak-btn';
+    speakBtn.innerHTML = '🔊';
+    speakBtn.title = 'Vorlesen (Wort, dann Satz)';
+    speakBtn.addEventListener('click', () => speakCard(c, current));
     actions.appendChild(flip);
-    actions.appendChild(speak);
-
+    actions.appendChild(speakBtn);
     el.appendChild(idDiv);
     el.appendChild(linesDiv);
     el.appendChild(actions);
-
     grid.appendChild(el);
   });
 }
-
 // ---------- Lernmodus (einfach) ----------
 let study = { queue:[], idx:0, side:'zh' };
-
-function shuffleArray(a){
-  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
-}
-
+function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function enterStudy(cards){
   const selectedLessons = getSelectedLessons();
   const qRaw = document.getElementById('q').value.trim();
@@ -520,36 +409,27 @@ function enterStudy(cards){
   });
   pool = shuffleArray(pool.slice());
   if(pool.length===0){ alert('Keine Karten in der Auswahl.'); return; }
-
   study.queue = pool; study.idx = 0; study.side = currentSide;
   document.getElementById('listView').style.display='none';
   document.getElementById('studyView').style.display='block';
   drawStudy();
 }
-
-function exitStudy(){
-  document.getElementById('studyView').style.display='none';
-  document.getElementById('listView').style.display='block';
-}
-
+function exitStudy(){ document.getElementById('studyView').style.display='none'; document.getElementById('listView').style.display='block'; }
 function drawStudy(){
   const c = study.queue[study.idx];
   const idEl = document.getElementById('studyId');
   idEl.textContent = `ID: ${c.id}`;
   const linesEl = document.getElementById('studyLines');
   linesEl.innerHTML='';
-
   const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
   let lines;
   if(study.side==='zh'){
-    // Chinesisch: Hanzi (erste Line), Pinyin + 3 Leerzeichen + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
     const l1 = c.word.hanzi || '';
-    const l2 = (c.word.pinyin || '') + (c.word.pos ? '   ' + posSpan : '');
+    const l2 = (c.word.pinyin || '') + (c.word.pos ? ' ' + posSpan : '');
     const l3 = c.sentence.hanzi || '';
     const l4 = c.sentence.pinyin || '';
     lines = [l1, l2, l3, l4].filter(Boolean);
   } else {
-    // Deutsch: Wort (erste Line), POS (separate zweite Line), Satz (dritte Line)
     const l1 = c.word.de || '';
     const l2 = posSpan;
     const l3 = c.sentence.de || '';
@@ -563,128 +443,78 @@ function drawStudy(){
     div.innerHTML = line;
     linesEl.appendChild(div);
   });
-
-  // Study-Actions dynamisch rendern
   const actionsEl = document.getElementById('studyActions');
   actionsEl.innerHTML = '';
-
-  // Umdrehen-Button
   const flipBtn = document.createElement('button');
   flipBtn.className = 'btn';
   flipBtn.textContent = 'Umdrehen';
   flipBtn.addEventListener('click', flipStudy);
   actionsEl.appendChild(flipBtn);
-
-  // Nächste Karte-Button
   const nextBtn = document.createElement('button');
   nextBtn.className = 'btn';
   nextBtn.textContent = 'Nächste Karte';
   nextBtn.addEventListener('click', nextStudy);
   actionsEl.appendChild(nextBtn);
-
-  // Speak-Button
   const speakBtn = document.createElement('button');
   speakBtn.className = 'speak-btn';
   speakBtn.innerHTML = '🔊';
   speakBtn.title = 'Vorlesen (Wort, dann Satz)';
   speakBtn.addEventListener('click', () => speakCard(c, study.side));
   actionsEl.appendChild(speakBtn);
-
   document.getElementById('counter').textContent = `${study.idx+1} / ${study.queue.length}`;
 }
-
 function nextStudy(){ if(study.queue.length===0) return; study.idx = (study.idx + 1) % study.queue.length; drawStudy(); }
 function flipStudy(){ study.side = (study.side==='zh' ? 'de' : 'zh'); drawStudy(); }
 function reshuffleStudy(){ if(study.queue.length<=1) return; const current = study.queue[study.idx]; shuffleArray(study.queue); const idx = study.queue.findIndex(x=>x.id===current.id); if(idx>0){ const [item]=study.queue.splice(idx,1); study.queue.unshift(item); study.idx=0; } drawStudy(); }
 
 // ---------- App Start ----------
+const DEBUG = false; // Debug-Kommentar ausschalten
 (async function(){
-  // PWA: Service Worker registrieren (nur wenn supported)
   if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('sw.js');
-      console.log('SW registered:', registration.scope); // Debug
-    } catch (err) {
-      console.log('SW registration failed:', err); // Fallback: App läuft trotzdem online
-    }
+    try { const registration = await navigator.serviceWorker.register('sw.js'); console.log('SW registered:', registration.scope); } catch (err) { console.log('SW registration failed:', err); }
   }
-
-  // TTS Stimmen laden (asynchron)
   loadVoices();
-
   try{
     const t0 = performance.now();
     const text = await loadCSV();
     const { rows, delimiter } = parseCSV(text);
     let cards = toCards(rows);
     const t1 = performance.now();
-
     const meta = document.getElementById('meta');
-    meta.textContent = `CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms • PWA: Offline-fähig`;
-
+    if (DEBUG) {
+      meta.textContent = `CSV geladen • Delimiter: "${delimiter==='\t'?'TAB':delimiter}" • Karten: ${cards.length} • ${Math.round(t1 - t0)} ms • PWA: Offline-fähig`;
+    } else {
+      meta.textContent = '';
+    }
     buildLessonFilters(cards);
     render(cards);
-
-    // Initialisiere Language Display (mit Flags)
     updateLanguageDisplay();
-
-    // Priming TTS beim Start (leises "Hallo" in initialer Sprache 'zh')
-    const initialLang = 'zh'; // Default-Seite
+    const initialLang = 'zh';
     primeTTS(initialLang);
-
-    // Language Switcher Event
     document.getElementById('switchDir').addEventListener('click', () => {
       const side = document.getElementById('side');
       side.value = (side.value === 'zh' ? 'de' : 'zh');
       updateLanguageDisplay();
-      render(cards); // Karten updaten
-      // Update Modal bei Wechsel (falls offen)
-      if (document.getElementById('ttsModal').style.display !== 'none') {
-        updateTTSModal(side.value);
-      }
+      render(cards);
+      if (document.getElementById('ttsModal').style.display !== 'none') { updateTTSModal(side.value); }
     });
-
-    // TTS Modal Events
     document.getElementById('ttsSettingsBtn').addEventListener('click', showTTSSettings);
-    document.getElementById('closeTTSModal').addEventListener('click', () => {
-      document.getElementById('ttsModal').style.display = 'none';
-    });
+    document.getElementById('closeTTSModal').addEventListener('click', () => { document.getElementById('ttsModal').style.display = 'none'; });
     document.getElementById('testVoiceBtn').addEventListener('click', testVoice);
-    document.getElementById('saveTTSSettings').addEventListener('click', () => {
-      const lang = document.getElementById('side').value;
-      saveTTSSettings(lang);
-      document.getElementById('ttsModal').style.display = 'none';
-    });
-    // Slider Value-Updates
-    document.getElementById('pitchSlider').addEventListener('input', (e) => {
-      document.getElementById('pitchValue').textContent = e.target.value;
-    });
-    document.getElementById('rateSlider').addEventListener('input', (e) => {
-      document.getElementById('rateValue').textContent = e.target.value;
-    });
-
-    // Events
+    document.getElementById('saveTTSSettings').addEventListener('click', () => { const lang = document.getElementById('side').value; saveTTSSettings(lang); document.getElementById('ttsModal').style.display = 'none'; });
+    document.getElementById('pitchSlider').addEventListener('input', (e) => { document.getElementById('pitchValue').textContent = e.target.value; });
+    document.getElementById('rateSlider').addEventListener('input', (e) => { document.getElementById('rateValue').textContent = e.target.value; });
     const q = document.getElementById('q');
     q.addEventListener('input', () => render(cards));
     document.getElementById('lesson_all').addEventListener('change', () => render(cards));
     document.getElementById('lessonFilters').addEventListener('change', () => render(cards));
-
-    // Study-Events (externe Buttons)
     document.getElementById('startStudy').addEventListener('click', () => enterStudy(cards));
     document.getElementById('exitStudy').addEventListener('click', () => exitStudy());
     document.getElementById('reshuffle').addEventListener('click', () => reshuffleStudy());
-
-    // Modal schließen bei Klick außerhalb
-    document.getElementById('ttsModal').addEventListener('click', (e) => {
-      if (e.target.id === 'ttsModal') {
-        e.target.style.display = 'none';
-      }
-    });
-
+    document.getElementById('ttsModal').addEventListener('click', (e) => { if (e.target.id === 'ttsModal') { e.target.style.display = 'none'; } });
   } catch (err){
     document.getElementById('meta').textContent = 'Fehler (möglicherweise offline): ' + err.message + '. Gehe online für Setup.';
     console.error(err);
-    // Zeige einfache Offline-Nachricht in UI
     const grid = document.getElementById('grid');
     grid.innerHTML = '<div class="empty">Offline-Modus: App ist eingerichtet, aber lade online neu für Daten.</div>';
   }

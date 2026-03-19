@@ -12,14 +12,14 @@ h1{ font-size:18px; margin:0; }
 .container{ max-width: 980px; margin: 0 auto; padding:16px; }
 .controls{ display:flex; gap:8px; flex-wrap: wrap; }
 .controls input, .controls select, .controls button{ background:#0e1116; color:var(--fg); border:1px solid #2a2f39; border-radius:8px; padding:8px 10px; }
-/* Neue Regel: Schriftgröße für Select (Sprache), Input (Suche) und Zähler auf 12px setzen (wie Lektionen-Liste/Small) */
+/* Schriftgröße für Select (Sprache), Input (Suche) und Zähler auf 16px (wie angepasst) */
 .controls select,
 .controls input[type="text"],  /* Speziell für das Suchfeld #q */
 #count {  /* Zähler unter den Controls */
-  font-size: 16px;  /* Passe hier an, falls du eine andere Größe meinst (z.B. 14px für Body-Default) */
+  font-size: 16px;
 }
 .controls .btn{ cursor:pointer; }
-/* Neu: Controls unter dem Titel, mobilfreundlich */
+/* Controls unter dem Titel, mobilfreundlich */
 .controls-block{ width:100%; margin-top:10px; }
 @media (max-width: 600px){
   .controls-block select,
@@ -57,3 +57,24 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 .pos{ color: var(--muted); font-style: normal; font-size: calc(1em - 2px); }
 .wordline{ font-size: 18px; }
 .wordline.zh{ font-family: "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif; }
+
+/* Neue Regeln für TTS-Speak-Button und Study-Actions */
+.speak-btn {
+  background: none;
+  border: none;
+  font-size: 18px;  /* Größe des Emojis */
+  cursor: pointer;
+  color: var(--accent);  /* Blaue Farbe für Akzent */
+  padding: 8px;  /* Etwas Padding für Klickfläche */
+  border-radius: 50%;  /* Rund für Icon-Look */
+  transition: color 0.2s;  /* Hover-Effekt */
+}
+.speak-btn:hover {
+  color: #6cdbff;  /* Heller beim Hover */
+}
+.study-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;  /* Abstand zur Karte */
+  justify-content: flex-start;  /* Links ausrichten */
+}

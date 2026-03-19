@@ -88,6 +88,40 @@ function highlightToneInsensitive(originalText, query){
   );
 }
 
+// ---------- TTS-Funktionen ----------
+function speak(text, lang) {
+  if (!text || !('speechSynthesis' in window)) return; // Fallback, wenn API nicht verfügbar
+  // Vorherige Sprachsynthese stoppen, um Unterbrechungen zu vermeiden
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.8; // Etwas langsamer für bessere Verständlichkeit
+  utterance.volume = 1.0;
+  utterance.pitch = 1.0;
+  speechSynthesis.speak(utterance);
+}
+
+function speakCard(c, current) {
+  let wordText, sentenceText, lang;
+  if (current === 'zh') {
+    wordText = c.word.pinyin || c.word.hanzi; // Pinyin bevorzugt für Aussprache; Fallback Hanzi
+    sentenceText = c.sentence.pinyin || c.sentence.hanzi; // Pinyin für Satz-Aussprache
+    lang = 'zh-CN'; // Mandarin-Chinesisch
+  } else {
+    wordText = c.word.de;
+    sentenceText = c.sentence.de;
+    lang = 'de-DE'; // Deutsch
+  }
+  if (wordText) {
+    speak(wordText, lang);
+  }
+  if (sentenceText) {
+    setTimeout(() => {
+      speak(sentenceText, lang);
+    }, 600); // 0.6 Sekunden Verzögerung nach dem Wort
+  }
+}
+
 // ---------- Datenaufbereitung ----------
 function toCards(rows){
   const cards = [];
@@ -250,12 +284,25 @@ function render(cards){
 
     const actions = document.createElement('div');
     actions.className = 'actions';
+
+    // Umdrehen-Button
     const flip = document.createElement('button');
     flip.className = 'btn';
     flip.textContent = 'Umdrehen';
-    flip.addEventListener('click', () => { current = (current === 'zh' ? 'de' : 'zh'); draw(); });
+    flip.addEventListener('click', () => { 
+      current = (current === 'zh' ? 'de' : 'zh'); 
+      draw(); 
+    });
+
+    // Speak-Button (Symbol: Lautsprecher-Emoji)
+    const speak = document.createElement('button');
+    speak.className = 'speak-btn';
+    speak.innerHTML = '🔊'; // Emoji für Lautsprecher
+    speak.title = 'Vorlesen (Wort, dann Satz)';
+    speak.addEventListener('click', () => speakCard(c, current));
 
     actions.appendChild(flip);
+    actions.appendChild(speak);
 
     el.appendChild(idDiv);
     el.appendChild(linesDiv);
@@ -306,7 +353,7 @@ function drawStudy(){
   const linesEl = document.getElementById('studyLines');
   linesEl.innerHTML='';
 
-  const posSpan = c.word.pos ? ` <span class=\"pos\">(${c.word.pos})</span>` : '';
+  const posSpan = c.word.pos ? ` <span class="pos">(${c.word.pos})</span>` : '';
   let lines;
   if(study.side==='zh'){
     // Chinesisch: Hanzi (erste Line), Pinyin + 3 Leerzeichen + POS (zweite Line), Satz-Hanzi, Satz-Pinyin
@@ -330,6 +377,32 @@ function drawStudy(){
     div.innerHTML = line;
     linesEl.appendChild(div);
   });
+
+  // Study-Actions dynamisch rendern
+  const actionsEl = document.getElementById('studyActions');
+  actionsEl.innerHTML = '';
+
+  // Umdrehen-Button
+  const flipBtn = document.createElement('button');
+  flipBtn.className = 'btn';
+  flipBtn.textContent = 'Umdrehen';
+  flipBtn.addEventListener('click', flipStudy);
+  actionsEl.appendChild(flipBtn);
+
+  // Nächste Karte-Button
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn';
+  nextBtn.textContent = 'Nächste Karte';
+  nextBtn.addEventListener('click', nextStudy);
+  actionsEl.appendChild(nextBtn);
+
+  // Speak-Button
+  const speakBtn = document.createElement('button');
+  speakBtn.className = 'speak-btn';
+  speakBtn.innerHTML = '🔊';
+  speakBtn.title = 'Vorlesen (Wort, dann Satz)';
+  speakBtn.addEventListener('click', () => speakCard(c, study.side));
+  actionsEl.appendChild(speakBtn);
 
   document.getElementById('counter').textContent = `${study.idx+1} / ${study.queue.length}`;
 }
@@ -365,10 +438,9 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     document.getElementById('lesson_all').addEventListener('change', () => render(cards));
     document.getElementById('lessonFilters').addEventListener('change', () => render(cards));
 
+    // Study-Events (externe Buttons)
     document.getElementById('startStudy').addEventListener('click', () => enterStudy(cards));
     document.getElementById('exitStudy').addEventListener('click', () => exitStudy());
-    document.getElementById('nextOne').addEventListener('click', () => nextStudy());
-    document.getElementById('flipOne').addEventListener('click', () => flipStudy());
     document.getElementById('reshuffle').addEventListener('click', () => reshuffleStudy());
 
   } catch (err){

@@ -189,7 +189,7 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
 .modal-body label {
   display: block;
   margin: 12px 0 4px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--fg);
 }
 .modal-body select,
@@ -200,7 +200,7 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   border: 1px solid #2a2f39;
   border-radius: 8px;
   padding: 8px;
-  font-size: 14px;
+  font-size: 16px;
 }
 .modal-body input[type="range"] {
   padding: 0;

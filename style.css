@@ -23,7 +23,7 @@ h1{ font-size:18px; margin:0; }
 @media (max-width: 600px){
   .controls-block input,
   .controls-block button { flex:1 1 100%; margin-bottom:4px; }
-  .controls-block .language-switcher { flex-wrap: nowrap; } /* Erzwingt nebeneinander */
+  .controls-block #languageSwitcher { flex-wrap: nowrap; } /* Erzwingt nebeneinander */
 }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
@@ -84,7 +84,7 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   gap: 8px;
   align-items: center;
   flex: 1; /* Nimmt verfügbaren Platz ein, aber nicht mehr als nötig */
-  min-width: 160px; /* Mindestbreite für die drei Elemente */
+  min-width: 180px; /* Angepasst für größeren Button */
 }
 #languageSwitcher span {
   background: #0e1116;
@@ -105,12 +105,12 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   color: var(--accent);
   border: 1px solid #2a2f39;
   border-radius: 8px;
-  padding: 8px;
-  font-size: 18px; /* Größer für Icon */
-  width: 32px; /* Feste, kompakte Breite (kürzer als Spans) */
+  padding: 10px; /* Etwas mehr Padding für größeren Button */
+  font-size: 20px; /* +2px größer */
+  width: 38px; /* 20% breiter/höher (von 32px) */
   min-width: unset;
-  height: 32px; /* Quadratisch */
-  flex: 0 0 32px; /* Kein Grow/Shrink */
+  height: 38px; /* Quadratisch */
+  flex: 0 0 38px; /* Kein Grow/Shrink */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,7 +120,7 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   background: #2a2f39;
   color: #6cdbff;
 }
-/* Mobile: Nebeneinander halten, kompakter */
+/* Mobile: Nebeneinander halten, kompakter aber größer */
 @media (max-width: 600px) {
   #languageSwitcher { 
     gap: 4px; /* Kleineres Gap für Mobile */
@@ -131,10 +131,11 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
     padding: 6px 8px; /* Weniger Padding */
   }
   #languageSwitcher .switch-btn { 
-    width: 28px; 
-    height: 28px; 
-    font-size: 16px; /* Kleineres Icon */
-    flex: 0 0 28px;
+    padding: 8px; /* Anpassung für Mobile */
+    width: 34px; /* 20% größer (von 28px) */
+    height: 34px; 
+    font-size: 18px; /* +2px größer */
+    flex: 0 0 34px;
   }
 }
 

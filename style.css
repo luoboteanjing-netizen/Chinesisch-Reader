@@ -24,7 +24,7 @@ h1{ font-size:18px; margin:0; }
 @media (max-width: 600px){
   .controls-block select,
   .controls-block input,
-  .controls-block button{ flex:1 1 100%; }
+  .controls-block button{ flex:1 1 100%; margin-bottom:4px; }
 }
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
 .card{ background: var(--card); border:1px solid #242933; border-radius:12px; padding:14px; min-height: 160px; display:flex; flex-direction:column; justify-content:space-between; }
@@ -78,3 +78,83 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   margin-top: 12px;  /* Abstand zur Karte */
   justify-content: flex-start;  /* Links ausrichten */
 }
+
+/* TTS Modal Styling */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: var(--card);
+  border: 1px solid #242933;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #2a2f39;
+  padding-bottom: 8px;
+}
+.modal-header h2 { margin: 0; font-size: 18px; }
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.close-btn:hover { background: #2a2f39; color: var(--fg); }
+.modal-body label {
+  display: block;
+  margin: 12px 0 4px;
+  font-size: 14px;
+  color: var(--fg);
+}
+.modal-body select,
+.modal-body input[type="range"] {
+  width: 100%;
+  background: #0e1116;
+  color: var(--fg);
+  border: 1px solid #2a2f39;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 14px;
+}
+.modal-body input[type="range"] {
+  padding: 0;
+  height: 6px;
+  background: #2a2f39;
+  accent-color: var(--accent);
+}
+.modal-body input[type="range"]::-webkit-slider-thumb {
+  background: var(--accent);
+  border: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+#saveTTSSettings { width: 100%; margin-top: 16px; }
+#voiceSelect, #pitchValue, #rateValue { font-family: monospace; } /* Für bessere Lesbarkeit von Namen */

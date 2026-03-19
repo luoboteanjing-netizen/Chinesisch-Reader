@@ -1,6 +1,9 @@
 // --- Konfiguration ---
 const CSV_PATH = './data/Long-Chinesisch_Lektionen.csv';
 
+// Globale Variablen für TTS
+let voices = []; // Geladene Stimmen
+
 // ---------- Hilfsfunktionen ----------
 function detectDelimiter(sample){
   const first = (sample.split(/\r?\n/)[0] || '');
@@ -89,31 +92,122 @@ function highlightToneInsensitive(originalText, query){
 }
 
 // ---------- TTS-Funktionen ----------
-function speak(text, lang, volume = 1.0, rate = 0.8) {
+function loadVoices() {
+  if ('speechSynthesis' in window) {
+    voices = speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => {
+      voices = speechSynthesis.getVoices();
+      // Aktualisiere Modal, falls offen
+      const modal = document.getElementById('ttsModal');
+      if (modal.style.display !== 'none') {
+        updateTTSModal(document.getElementById('side').value);
+      }
+    };
+  }
+}
+
+function getVoicesForLang(lang) {
+  const langCode = lang === 'zh' ? 'zh-CN' : 'de-DE';
+  return voices.filter(voice => voice.lang.startsWith(lang === 'zh' ? 'zh' : 'de'));
+}
+
+function getTTSSettings(lang) {
+  const voiceKey = `tts_voice_${lang}`;
+  const pitchKey = `tts_pitch_${lang}`;
+  const rateKey = `tts_rate_${lang}`;
+  return {
+    voiceName: localStorage.getItem(voiceKey) || null,
+    pitch: parseFloat(localStorage.getItem(pitchKey)) || 1.0,
+    rate: parseFloat(localStorage.getItem(rateKey)) || (lang === 'zh' ? 0.8 : 0.8)
+  };
+}
+
+function saveTTSSettings(lang) {
+  const settings = getTTSSettings(lang); // Aktuelle Werte aus Modal
+  const voiceKey = `tts_voice_${lang}`;
+  const pitchKey = `tts_pitch_${lang}`;
+  const rateKey = `tts_rate_${lang}`;
+  localStorage.setItem(voiceKey, settings.voiceName);
+  localStorage.setItem(pitchKey, settings.pitch.toFixed(1));
+  localStorage.setItem(rateKey, settings.rate.toFixed(1));
+}
+
+function updateTTSModal(lang) {
+  const select = document.getElementById('voiceSelect');
+  const voicesForLang = getVoicesForLang(lang);
+  select.innerHTML = '';
+  if (voicesForLang.length === 0) {
+    select.innerHTML = '<option value="">Keine Stimmen verfügbar (lade Seite neu)</option>';
+    return;
+  }
+  voicesForLang.forEach(voice => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    option.textContent = `${voice.name} (${voice.lang})`;
+    select.appendChild(option);
+  });
+  // Setze gespeicherte Voice
+  const settings = getTTSSettings(lang);
+  select.value = settings.voiceName || voicesForLang[0].name; // Default: Erste Stimme
+  document.getElementById('pitchSlider').value = settings.pitch;
+  document.getElementById('pitchValue').textContent = settings.pitch;
+  document.getElementById('rateSlider').value = settings.rate;
+  document.getElementById('rateValue').textContent = settings.rate;
+}
+
+function showTTSSettings() {
+  const lang = document.getElementById('side').value;
+  loadVoices(); // Sicherstellen, dass Stimmen geladen sind
+  updateTTSModal(lang);
+  document.getElementById('ttsModal').style.display = 'flex';
+}
+
+function speak(text, lang, volume = 1.0) {
   if (!text || !('speechSynthesis' in window)) return; // Fallback, wenn API nicht verfügbar
   // Vorherige Sprachsynthese stoppen
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = rate;
+  utterance.lang = lang === 'zh' ? 'zh-CN' : 'de-DE';
+
+  // TTS-Settings laden und anwenden
+  const settings = getTTSSettings(lang);
+  const voicesForLang = getVoicesForLang(lang);
+  if (settings.voiceName && voicesForLang.length > 0) {
+    const selectedVoice = voicesForLang.find(voice => voice.name === settings.voiceName);
+    if (selectedVoice) utterance.voice = selectedVoice;
+  }
+  utterance.pitch = settings.pitch;
+  utterance.rate = settings.rate;
   utterance.volume = volume;
-  utterance.pitch = 1.0;
+
   speechSynthesis.speak(utterance);
-  // console.log('Speaking:', text, 'in', lang); // Debug: Aktiviere für Logs
+  // console.log('Speaking:', text, 'in', lang, 'with voice:', utterance.voice?.name, 'pitch:', utterance.pitch, 'rate:', utterance.rate); // Debug
 }
 
 function primeTTS(initialLang) {
   if (!('speechSynthesis' in window)) return; // Kein Priming, wenn nicht verfügbar
   setTimeout(() => {
     let primeText = 'Hallo';
-    let lang = 'de-DE';
+    let speakLang = 'de';
     if (initialLang === 'zh') {
       primeText = 'Nǐ hǎo'; // Hallo auf Chinesisch
-      lang = 'zh-CN';
+      speakLang = 'zh';
     }
-    speak(primeText, lang, 0.3, 1.0); // Leise (0.3 Volumen), normale Rate
-    // console.log('Priming TTS with:', primeText, 'in', lang); // Debug
-  }, 500); // 500ms nach App-Start, um Laden nicht zu stören
+    // Nutze Settings für Priming
+    const settings = getTTSSettings(speakLang);
+    const voicesForLang = getVoicesForLang(speakLang);
+    const utterance = new SpeechSynthesisUtterance(primeText);
+    utterance.lang = speakLang === 'zh' ? 'zh-CN' : 'de-DE';
+    if (settings.voiceName && voicesForLang.length > 0) {
+      const selectedVoice = voicesForLang.find(voice => voice.name === settings.voiceName);
+      if (selectedVoice) utterance.voice = selectedVoice;
+    }
+    utterance.pitch = settings.pitch;
+    utterance.rate = settings.rate;
+    utterance.volume = 0.3; // Leise
+    speechSynthesis.speak(utterance);
+    // console.log('Priming TTS with:', primeText, 'in', speakLang); // Debug
+  }, 500); // 500ms nach App-Start
 }
 
 function speakCard(c, current) {
@@ -122,11 +216,11 @@ function speakCard(c, current) {
     // Fix: Hanzi forcieren für natürliche Aussprache
     wordText = c.word.hanzi || ''; // Immer Hanzi (Fallback leer)
     sentenceText = c.sentence.hanzi || ''; // Immer Hanzi (Fallback leer)
-    lang = 'zh-CN'; // Mandarin-Chinesisch
+    lang = 'zh';
   } else {
     wordText = c.word.de;
     sentenceText = c.sentence.de;
-    lang = 'de-DE'; // Deutsch
+    lang = 'de';
   }
   // Wort mit angepasstem Delay starten (API primen)
   if (wordText) {
@@ -433,6 +527,9 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
 
 // ---------- App Start ----------
 (async function(){
+  // TTS Stimmen laden (asynchron)
+  loadVoices();
+
   try{
     const t0 = performance.now();
     const text = await loadCSV();
@@ -450,10 +547,41 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     const initialLang = 'zh'; // Default-Seite
     primeTTS(initialLang);
 
+    // TTS Modal Events
+    document.getElementById('ttsSettingsBtn').addEventListener('click', showTTSSettings);
+    document.getElementById('closeTTSModal').addEventListener('click', () => {
+      document.getElementById('ttsModal').style.display = 'none';
+    });
+    document.getElementById('saveTTSSettings').addEventListener('click', () => {
+      const lang = document.getElementById('side').value;
+      // Aktualisiere Settings aus Modal
+      const voiceSelect = document.getElementById('voiceSelect');
+      const pitchSlider = document.getElementById('pitchSlider');
+      const rateSlider = document.getElementById('rateSlider');
+      getTTSSettings(lang).voiceName = voiceSelect.value;
+      getTTSSettings(lang).pitch = parseFloat(pitchSlider.value);
+      getTTSSettings(lang).rate = parseFloat(rateSlider.value);
+      saveTTSSettings(lang);
+      document.getElementById('ttsModal').style.display = 'none';
+    });
+    // Slider Value-Updates
+    document.getElementById('pitchSlider').addEventListener('input', (e) => {
+      document.getElementById('pitchValue').textContent = e.target.value;
+    });
+    document.getElementById('rateSlider').addEventListener('input', (e) => {
+      document.getElementById('rateValue').textContent = e.target.value;
+    });
+
     // Events
     const sideSel = document.getElementById('side');
     const q = document.getElementById('q');
-    sideSel.addEventListener('change', () => render(cards));
+    sideSel.addEventListener('change', () => {
+      render(cards);
+      // Update Modal bei Sprache-Wechsel (falls offen)
+      if (document.getElementById('ttsModal').style.display !== 'none') {
+        updateTTSModal(sideSel.value);
+      }
+    });
     q.addEventListener('input', () => render(cards));
     document.getElementById('flipAll').addEventListener('click', () => {
       sideSel.value = (sideSel.value === 'zh' ? 'de' : 'zh');
@@ -466,6 +594,13 @@ function reshuffleStudy(){ if(study.queue.length<=1) return; const current = stu
     document.getElementById('startStudy').addEventListener('click', () => enterStudy(cards));
     document.getElementById('exitStudy').addEventListener('click', () => exitStudy());
     document.getElementById('reshuffle').addEventListener('click', () => reshuffleStudy());
+
+    // Modal schließen bei Klick außerhalb
+    document.getElementById('ttsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'ttsModal') {
+        e.target.style.display = 'none';
+      }
+    });
 
   } catch (err){
     document.getElementById('meta').textContent = 'Fehler: ' + err.message;

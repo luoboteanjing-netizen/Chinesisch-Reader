@@ -1,26 +1,26 @@
-<!--R5 ... -->
+
 <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Flashcards – Chinesisch/Deutsch</title>
-  
-  <!-- PWA Meta-Tags -->
-  <meta name="theme-color" content="#4cc2ff">
-  <meta name="description" content="Lern-App für Chinesisch-Deutsch Vokabeln mit TTS und Lernmodus">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icons/icon-192.png"> <!-- Favicon, passe an -->
-  
+
+  <!-- PWA/Offline bewusst deaktiviert: Manifest und SW nicht verwenden -->
+  <!-- <link rel="manifest" href="manifest.json"> -->
+  <!-- <meta name="theme-color" content="#4cc2ff"> -->
+  <!-- <meta name="description" content="Lern-App für Chinesisch-Deutsch Vokabeln mit TTS und Lernmodus"> -->
+
+  <!-- Favicon/Icons können bleiben, falls vorhanden -->
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>Flashcards – Chinesisch/Deutsch</h1>
-
     <!-- Controls unter der Überschrift für bessere Mobile-Ansicht -->
     <div class="controls controls-block">
-      <!-- Language Switcher: Drei Felder in Reihe (Quell, Wechsel-Button, Ziel) -->
+      <!-- Language Switcher -->
       <div id="languageSwitcher">
         <input type="hidden" id="side" value="zh" />
         <span id="sourceLang">Chinesisch</span>
@@ -36,7 +36,7 @@
     <div id="meta" class="muted small"></div>
 
     <section class="filters">
-      <div class="legend">Lektionen (aus ID, erste 3 Zeichen) – scrollbare Auswahl</div>
+     <div class="legend" style="display:none;"></div>
       <div class="lesson-box">
         <label class="chip"><input type="checkbox" id="lesson_all" checked> Alle</label>
         <div id="lessonFilters" class="lesson-list"><!-- erzeugt per JS --></div>
@@ -74,18 +74,15 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>TTS Einstellungen</h2>
-        <button class="close-btn" id="closeTTSModal">&times;</button>
+        <button class="close-btn" id="closeTTSModal">×</button>
       </div>
       <div class="modal-body">
         <label for="voiceSelect">Stimme (für aktuelle Sprache):</label>
         <select id="voiceSelect"></select>
-
         <label for="pitchSlider">Tonhöhe (Pitch): <span id="pitchValue">1.0</span></label>
         <input type="range" id="pitchSlider" min="0.5" max="2.0" step="0.1" value="1.0">
-
         <label for="rateSlider">Geschwindigkeit (Rate): <span id="rateValue">0.8</span></label>
         <input type="range" id="rateSlider" min="0.5" max="2.0" step="0.1" value="0.8">
-
         <button class="btn" id="testVoiceBtn">Stimme testen</button>
         <button class="btn" id="saveTTSSettings">Speichern & Schließen</button>
       </div>
@@ -95,3 +92,5 @@
   <script src="app.js"></script>
 </body>
 </html>
+``
+

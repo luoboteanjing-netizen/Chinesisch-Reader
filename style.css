@@ -221,4 +221,17 @@ mark{ background: #3a3f49; color: #fff; border-radius: 4px; padding: 0 2px; }
   width: 100%;
   margin-top: 8px;
 }
+
+/* Actions-Leiste: Lautsprecher-Icon ganz rechts */
+.actions {
+  display: flex;         /* falls noch nicht gesetzt */
+  gap: 8px;              /* optional */
+  align-items: center;   /* optional */
+}
+
+.actions .speak-btn {
+  margin-left: auto;     /* schiebt den Button nach rechts */
+}
+
+
 #voiceSelect, #pitchValue, #rateValue { font-family: monospace; } /* Für bessere Lesbarkeit von Namen */

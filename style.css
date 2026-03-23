@@ -60,6 +60,76 @@ h1{ font-size:18px; margin:0; }
 }
 
 /* --- Reihenfolge fixieren (Switcher → Stimme → Suche) --- */
+
+/* LANGUAGE SWITCHER – zentriertes 3-Spalten-Layout */
+#languageSwitcher {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* links – Button – rechts */
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 100%;          /* bleibt volle Zeile in den Controls */
+  width: 100%;
+}
+
+/* Sprachfelder links/rechts, mittig ausgerichtet im jeweiligen Bereich */
+#languageSwitcher span {
+  background: #0e1116;
+  color: var(--fg);
+  border: 1px solid #2a2f39;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 16px;
+  min-width: 80px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Switch-Button mittig platzieren und doppelte Breite */
+#languageSwitcher .switch-btn {
+  justify-self: center;    /* Button in der mittleren Spalte zentrieren */
+  background: #0e1116;
+  color: var(--accent);
+  border: 1px solid #2a2f39;
+  border-radius: 8px;
+  /* doppelte Breite: vorher 38px → jetzt 76px */
+  width: 76px;
+  height: 38px;
+  font-size: 20px;
+  padding: 0;              /* echte, feste Größe ohne zusätzliches Padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+
+/* Mobile-Tuning: etwas kompakter, aber gleiche Logik */
+@media (max-width: 600px) {
+  #languageSwitcher {
+    gap: 6px;
+  }
+  #languageSwitcher span {
+    min-width: 60px;
+    padding: 6px 8px;
+    font-size: 15px;
+  }
+  #languageSwitcher .switch-btn {
+    width: 72px;  /* leicht reduziert für sehr kleine Viewports */
+    height: 36px;
+    font-size: 18px;
+  }
+}
+``
+
+
+
+
+
+
+
+
 #languageSwitcher {
   order: 1;
   flex: 1 1 100%;
